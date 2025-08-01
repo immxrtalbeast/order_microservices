@@ -22,6 +22,7 @@ func main() {
 
 	application.GRPCServer.MustRun()
 	log.Info("db connected")
+
 }
 
 func setupLogger() *slog.Logger {
