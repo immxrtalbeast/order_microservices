@@ -3,8 +3,6 @@ package order;
 
 option go_package = "github.com/immxrtalbeast/order_microservices/internal/protos/gen/go/order";
 
-
-
 service OrderService{
     rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
 }

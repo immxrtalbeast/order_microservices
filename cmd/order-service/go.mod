@@ -7,7 +7,6 @@ require (
 	gorm.io/gorm v1.30.1
 	google.golang.org/protobuf v1.36.6 
 	google.golang.org/grpc v1.74.2 
-	
 )
 
 require (
