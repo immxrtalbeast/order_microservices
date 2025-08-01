@@ -21,3 +21,10 @@ type GoodRepository interface {
 	DeleteGood(ctx context.Context, goodID uuid.UUID) error
 	UpdateGood(ctx context.Context, good *Good) error
 }
+
+type InventoryInteractor interface {
+	AddGood(ctx context.Context, name string, description string, imageLink string, price int, quantityInStock int) error
+	ListProducts(ctx context.Context) ([]*Good, error)
+	DeleteGood(ctx context.Context, goodID uuid.UUID) error
+	UpdateGood(ctx context.Context, goodID uuid.UUID, name string, description string, imageLink string, price int, quantityInStock int) error
+}
