@@ -1,0 +1,32 @@
+syntax = "proto3";
+package order;
+
+import "google/protobuf/timestamp.proto";
+
+service OrderService{
+    rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+}
+
+message CreateOrderRequest{ 
+    string user_id = 1;
+    repeated OrderItem items = 2;
+}
+
+message OrderItem {
+    string product_id = 1;
+    int32 quantity = 2;
+}
+
+message CreateOrderResponse{
+    string order_id = 1;
+    OrderStatus status = 2;
+}
+
+enum OrderStatus{
+    CREATED = 0;
+    PROCESSING = 1;
+    COMPLETED = 2;
+    CANCELLED = 3;
+}
+
+
