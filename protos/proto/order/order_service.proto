@@ -1,7 +1,9 @@
 syntax = "proto3";
 package order;
 
-import "google/protobuf/timestamp.proto";
+option go_package = "github.com/immxrtalbeast/order_microservices/internal/protos/gen/go/order";
+
+
 
 service OrderService{
     rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
