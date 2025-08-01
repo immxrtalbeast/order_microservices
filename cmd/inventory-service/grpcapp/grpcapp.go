@@ -19,7 +19,7 @@ type GrpcApp struct {
 	port       int // Порт, на котором будет работать grpc-сервер
 }
 
-func New(log *slog.Logger, inventoryService inventorygrpc.Inventory, port int) *GrpcApp {
+func New(log *slog.Logger, inventoryService inventorygrpc.InventoryController, port int) *GrpcApp {
 
 	recoveryOpts := []recovery.Option{
 		recovery.WithRecoveryHandler(func(p interface{}) (err error) {
