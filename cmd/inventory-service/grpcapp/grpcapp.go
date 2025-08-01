@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"net"
 
+	"immxrtalbeast/order_microservices/inventory-service/internal/domain"
 	inventorygrpc "immxrtalbeast/order_microservices/inventory-service/internal/grpc/inventory"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
@@ -19,7 +20,7 @@ type GrpcApp struct {
 	port       int // Порт, на котором будет работать grpc-сервер
 }
 
-func New(log *slog.Logger, inventoryService inventorygrpc.InventoryController, port int) *GrpcApp {
+func New(log *slog.Logger, inventoryInteractor domain.InventoryInteractor, port int) *GrpcApp {
 
 	recoveryOpts := []recovery.Option{
 		recovery.WithRecoveryHandler(func(p interface{}) (err error) {
@@ -33,7 +34,7 @@ func New(log *slog.Logger, inventoryService inventorygrpc.InventoryController, p
 		recovery.UnaryServerInterceptor(recoveryOpts...),
 	))
 
-	inventorygrpc.Register(gRPCServer, inventoryService)
+	inventorygrpc.Register(gRPCServer, inventoryInteractor)
 
 	return &GrpcApp{
 		log:        log,

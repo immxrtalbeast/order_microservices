@@ -14,18 +14,11 @@ import (
 
 type serverAPI struct {
 	inventory.UnimplementedInventoryServer
-	inventoryController InventoryController
+	inventoryInteractor domain.InventoryInteractor
 }
 
-type InventoryController interface {
-	AddGood(ctx context.Context, name string, description string, imageLink string, price int, quantityInStock int) error
-	ListProducts(ctx context.Context) ([]*domain.Good, error)
-	DeleteGood(ctx context.Context, goodID uuid.UUID) error
-	UpdateGood(ctx context.Context, goodID uuid.UUID, name string, description string, imageLink string, price int, quantityInStock int) error
-}
-
-func Register(gRPCServer *grpc.Server, inventoryController InventoryController) {
-	inventory.RegisterInventoryServer(gRPCServer, &serverAPI{inventoryController: inventoryController})
+func Register(gRPCServer *grpc.Server, inventoryInteractor domain.InventoryInteractor) {
+	inventory.RegisterInventoryServer(gRPCServer, &serverAPI{inventoryInteractor: inventoryInteractor})
 }
 
 func (s *serverAPI) AddGood(ctx context.Context, in *inventory.AddGoodRequest) (*inventory.AddGoodResponse, error) {
@@ -39,14 +32,14 @@ func (s *serverAPI) AddGood(ctx context.Context, in *inventory.AddGoodRequest) (
 		return nil, status.Error(codes.InvalidArgument, "quantity should be equal/greater than 0")
 	}
 
-	if err := s.inventoryController.AddGood(ctx, in.Name, in.Description, in.ImageLink, int(in.Price), int(in.QuantityInStock)); err != nil {
+	if err := s.inventoryInteractor.AddGood(ctx, in.Name, in.Description, in.ImageLink, int(in.Price), int(in.QuantityInStock)); err != nil {
 		return nil, status.Error(codes.Internal, "failed to save good")
 	}
 	return &inventory.AddGoodResponse{Success: true}, nil
 }
 
 func (s *serverAPI) ListProducts(ctx context.Context, in *inventory.ListProductsRequest) (*inventory.ListProductsResponse, error) {
-	goods, err := s.inventoryController.ListProducts(ctx)
+	goods, err := s.inventoryInteractor.ListProducts(ctx)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to get goods")
 	}
@@ -57,7 +50,7 @@ func (s *serverAPI) ListProducts(ctx context.Context, in *inventory.ListProducts
 
 func (s *serverAPI) DeleteGood(ctx context.Context, in *inventory.DeleteGoodRequest) (*inventory.DeleteGoodResponse, error) {
 	good_id, _ := uuid.Parse(in.GoodId)
-	if err := s.inventoryController.DeleteGood(ctx, good_id); err != nil {
+	if err := s.inventoryInteractor.DeleteGood(ctx, good_id); err != nil {
 		return nil, status.Error(codes.Internal, "failed to delete good")
 	}
 	return &inventory.DeleteGoodResponse{Success: true}, nil
@@ -74,7 +67,7 @@ func (s *serverAPI) UpdateGood(ctx context.Context, in *inventory.UpdateGoodRequ
 	if in.QuantityInStock < 0 {
 		return nil, status.Error(codes.InvalidArgument, "quantity should be equal/greater than 0")
 	}
-	if err := s.inventoryController.UpdateGood(ctx, good_id, in.Name, in.Description, in.ImageLink, int(in.Price), int(in.QuantityInStock)); err != nil {
+	if err := s.inventoryInteractor.UpdateGood(ctx, good_id, in.Name, in.Description, in.ImageLink, int(in.Price), int(in.QuantityInStock)); err != nil {
 		return nil, status.Error(codes.InvalidArgument, "failed to update good")
 	}
 	return &inventory.UpdateGoodResponse{Success: true}, nil

@@ -32,7 +32,7 @@ func (gi *GoodInteractor) AddGood(ctx context.Context, name string, description 
 	return nil
 }
 
-func (gi *GoodInteractor) ListProducts(ctx context.Context) ([]*domain.Good, error) {
+func (gi *GoodInteractor) ListProductssss(ctx context.Context) ([]*domain.Good, error) {
 	const op = "service.good.list"
 	goods, err := gi.goodRepo.ListGoods(ctx)
 	if err != nil {
