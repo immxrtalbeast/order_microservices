@@ -1,0 +1,6 @@
+env: "local"
+clients:
+  auth:
+      address: localhost:44044
+      timeout: 5s
+      retriesCount: 10

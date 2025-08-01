@@ -26,7 +26,9 @@ func New(
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: true,
-	}), &gorm.Config{})
+	}), &gorm.Config{
+		SkipDefaultTransaction: true,
+	})
 	if err != nil {
 		panic("failed to connect database")
 	}
