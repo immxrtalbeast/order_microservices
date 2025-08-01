@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "github.com/immxrtalbeast/order_microservices/internal/protos/gen/go/auth";
+
+service Auth {
+    rpc Register (RegisterRequest) returns (RegisterResponse);
+    rpc Login (LoginRequest) returns (LoginResponse);
+    rpc IsAdmin (IsAdminRequest) returns (IsAdminResponse);
+}
+
+message RegisterRequest {
+  string email = 1; // Email of the user to register.
+  string password = 2; // Password of the user to register.
+}
+
+message RegisterResponse {
+  string user_id = 1; // User ID of the registered user.
+}
+
+message LoginRequest {
+  string email = 1; // Email of the user to login.
+  string password = 2; // Password of the user to login.
+}
+
+message LoginResponse {
+  string token = 1; // Auth token of the logged in user.
+}
+
+message IsAdminRequest {
+    string user_id = 1;
+}
+
+message IsAdminResponse {
+    bool is_admin = 1;
+}
