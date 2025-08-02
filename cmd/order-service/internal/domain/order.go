@@ -31,3 +31,9 @@ type OrderRepository interface {
 	UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, status string) error
 	ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Order, error)
 }
+
+type OrderInteractor interface {
+	CreateOrder(ctx context.Context, userID uuid.UUID, orderItem []OrderItem) (uuid.UUID, string, error)
+	Order(ctx context.Context, orderID uuid.UUID) (Order, error)
+	ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Order, error)
+}
