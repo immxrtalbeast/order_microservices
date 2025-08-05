@@ -4,3 +4,7 @@ clients:
       address: localhost:44044
       timeout: 5s
       retriesCount: 10
+  inventory:
+      address: localhost:44045
+      timeout: 5s
+      retriesCount: 10
