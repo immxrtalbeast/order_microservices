@@ -104,7 +104,7 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email string, pass string) (
 
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
-
+	log.Info("user registered")
 	return id, nil
 }
 
