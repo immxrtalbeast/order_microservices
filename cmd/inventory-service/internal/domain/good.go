@@ -15,11 +15,22 @@ type Good struct {
 	QuantityInStock int
 }
 
+type OrderItem struct {
+	GoodID   uuid.UUID `json:"product_id"`
+	Quantity int       `json:"quantity"`
+}
+type ReserveProductsEvent struct {
+	OrderID  uuid.UUID   `json:"order_id"`
+	SagaID   uuid.UUID   `json:"saga_id"`
+	Products []OrderItem `json:"products"`
+}
+
 type GoodRepository interface {
 	SaveGood(ctx context.Context, good *Good) error
 	ListGoods(ctx context.Context) ([]*Good, error)
 	DeleteGood(ctx context.Context, goodID uuid.UUID) error
 	UpdateGood(ctx context.Context, good *Good) error
+	ReserveProducts(ctx context.Context, goods []OrderItem) error
 }
 
 type InventoryInteractor interface {
@@ -27,4 +38,5 @@ type InventoryInteractor interface {
 	ListProducts(ctx context.Context) ([]*Good, error)
 	DeleteGood(ctx context.Context, goodID uuid.UUID) error
 	UpdateGood(ctx context.Context, goodID uuid.UUID, name string, description string, imageLink string, price int, quantityInStock int) error
+	ReserveProducts(ctx context.Context, event ReserveProductsEvent)
 }

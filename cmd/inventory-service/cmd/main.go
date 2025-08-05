@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"immxrtalbeast/order_microservices/inventory-service/grpcapp"
 	"immxrtalbeast/order_microservices/inventory-service/internal/config"
 	"immxrtalbeast/order_microservices/inventory-service/internal/domain"
@@ -10,6 +12,7 @@ import (
 	"immxrtalbeast/order_microservices/inventory-service/internal/storage/psql"
 	"log/slog"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -35,8 +38,22 @@ func main() {
 	}
 	log.Info("db connected")
 	db.AutoMigrate(&domain.Good{})
+	producer := kafka.NewProducer(
+		[]string{"localhost:9092"},
+		"saga",
+	)
+	defer producer.Close()
+
 	goodRepo := psql.NewGoodRepository(db)
-	goodInteractor := good.NewGoodInteractor(goodRepo, log)
+	goodInteractor := good.NewGoodInteractor(goodRepo, log, producer)
+
+	consumer := kafka.NewConsumer(
+		[]string{"localhost:9092"},
+		"inventory",
+		"order-service-group",
+	)
+	defer consumer.Close()
+	go processInventoryEvents(consumer, goodInteractor, log)
 	grpcApp := grpcapp.New(log, goodInteractor, cfg.GRPC.Port)
 	grpcApp.MustRun()
 
@@ -78,3 +95,32 @@ func setupPrettySlog() *slog.Logger {
 
 	return slog.New(handler)
 }
+
+func processInventoryEvents(consumer *kafka.Consumer, goodInteractor *good.GoodInteractor, log *slog.Logger) {
+	for {
+		readCtx, readCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		var event domain.ReserveProductsEvent
+
+		_, err := consumer.ReadEvent(readCtx, &event)
+		readCancel()
+		if err != nil {
+			if err == context.DeadlineExceeded {
+				continue
+			}
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		processCtx, processCancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer processCancel()
+		log.Info("Order created event received", event)
+		goodInteractor.ReserveProducts(processCtx, event)
+	}
+}
+
+// {
+//   "order_id": "a34ce156-0353-4312-8a20-a80f5e684096",
+//   "saga_id": "a32ce156-0353-4312-8a20-a80f5e684096",
+//   "products": [
+//     {"product_id": "a30ce156-0353-4312-8a20-a80f5e684096", "quantity": 2}
+//     ]
+// }

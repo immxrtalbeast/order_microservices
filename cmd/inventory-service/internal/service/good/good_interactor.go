@@ -3,6 +3,7 @@ package good
 import (
 	"context"
 	"fmt"
+	"immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"immxrtalbeast/order_microservices/inventory-service/internal/domain"
 	"immxrtalbeast/order_microservices/inventory-service/internal/lib/logger/sl"
 	"log/slog"
@@ -13,10 +14,11 @@ import (
 type GoodInteractor struct {
 	log      *slog.Logger
 	goodRepo domain.GoodRepository
+	producer *kafka.Producer
 }
 
-func NewGoodInteractor(goodRepo domain.GoodRepository, log *slog.Logger) *GoodInteractor {
-	return &GoodInteractor{goodRepo: goodRepo, log: log}
+func NewGoodInteractor(goodRepo domain.GoodRepository, log *slog.Logger, producer *kafka.Producer) *GoodInteractor {
+	return &GoodInteractor{goodRepo: goodRepo, log: log, producer: producer}
 }
 
 func (gi *GoodInteractor) AddGood(ctx context.Context, name string, description string, imageLink string, price int, quantityInStock int) error {
@@ -99,4 +101,27 @@ func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name
 	}
 	log.Info("good updated")
 	return nil
+}
+
+func (gi *GoodInteractor) ReserveProducts(ctx context.Context, event domain.ReserveProductsEvent) {
+	const op = "service.good.update"
+	log := gi.log.With(
+		slog.String("op", op),
+		slog.String("order_id", event.OrderID.String()),
+		slog.String("saga_id", event.SagaID.String()),
+		slog.Any("products", event.Products),
+	)
+	log.Info("reserving goods")
+	if err := gi.goodRepo.ReserveProducts(ctx, event.Products); err != nil {
+		log.Error("failed to reserve products", sl.Err(err))
+		if err := gi.producer.PublishEvent(context.Background(), "InventoryReservedEventFailed", event); err != nil {
+			log.Error("Failed to publish event", sl.Err(err))
+		}
+		return
+	}
+	log.Info("goods reserved")
+	if err := gi.producer.PublishEvent(context.Background(), "InventoryReservedEvent", event); err != nil {
+		log.Error("Failed to publish event", sl.Err(err))
+	}
+	return
 }
