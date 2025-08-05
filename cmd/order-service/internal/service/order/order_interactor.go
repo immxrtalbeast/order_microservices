@@ -41,7 +41,7 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 	return order.ID, order.Status, nil
 }
 
-func (oi *OrderInteractor) GetOrder(ctx context.Context, orderID uuid.UUID) (domain.Order, error) {
+func (oi *OrderInteractor) Order(ctx context.Context, orderID uuid.UUID) (domain.Order, error) {
 	const op = "service.order.get"
 	order, err := oi.orderRepo.GetOrder(ctx, orderID)
 	if err != nil {
