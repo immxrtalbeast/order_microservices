@@ -39,7 +39,7 @@ func main() {
 	log.Info("db connected")
 	db.AutoMigrate(&domain.Good{})
 	producer := kafka.NewProducer(
-		[]string{"localhost:9092"},
+		[]string{os.Getenv("KAFKA_ADDRESS")},
 		"saga",
 	)
 	defer producer.Close()
@@ -48,7 +48,7 @@ func main() {
 	goodInteractor := good.NewGoodInteractor(goodRepo, log, producer)
 
 	consumer := kafka.NewConsumer(
-		[]string{"localhost:9092"},
+		[]string{os.Getenv("KAFKA_ADDRESS")},
 		"inventory",
 		"order-service-group",
 	)
