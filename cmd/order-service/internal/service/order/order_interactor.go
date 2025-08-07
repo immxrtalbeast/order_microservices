@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/domain"
+	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib/logger/sl"
 	"immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"log/slog"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -27,7 +27,7 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 	log := oi.log.With(
 		slog.String("op", op),
 		slog.String("user_id", userID.String()),
-		slog.Int("items", len(items)),
+		slog.Any("items", items),
 	)
 
 	log.Info("creating order")
@@ -37,13 +37,11 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 	}
 
 	order := &domain.Order{
-		ID:        uuid.New(),
-		UserID:    userID,
-		Items:     items,
-		Total:     total,
-		Status:    "PENDING",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		ID:     uuid.New(),
+		UserID: userID,
+		Items:  items,
+		Total:  total,
+		Status: "PENDING",
 	}
 
 	log = log.With(slog.String("order_id", order.ID.String()))
@@ -56,9 +54,11 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 		return uuid.Nil, "", fmt.Errorf("%s: %w", op, err)
 	}
 
+	products := lib.ConvertItemstoEventItems(order.Items)
+
 	event := domain.OrderCreatedEvent{
 		OrderID:  order.ID,
-		Products: order.Items,
+		Products: products,
 		UserID:   order.UserID,
 	}
 

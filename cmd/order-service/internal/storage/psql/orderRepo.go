@@ -18,25 +18,32 @@ func NewOrderRepository(db *gorm.DB) *OrderRepository {
 }
 
 func (r *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) (uuid.UUID, error) {
-
 	tx := r.db.WithContext(ctx).Begin()
 	if tx.Error != nil {
 		return uuid.Nil, tx.Error
 	}
 
+	// 1. Сохраняем основной заказ
 	if err := tx.Create(order).Error; err != nil {
 		tx.Rollback()
 		return uuid.Nil, err
 	}
 
-	for _, item := range order.Items {
-		item.OrderID = order.ID // установление связи с основным заказом
-		if err := tx.Create(&item).Error; err != nil {
-			tx.Rollback()
-			return uuid.Nil, err
-		}
+	// 2. Подготовка элементов
+	for i := range order.Items {
+		order.Items[i].OrderID = order.ID // Устанавливаем связь
+
+		// ⭐ ВАЖНО: Сбрасываем ID чтобы БД сгенерировала новый UUID ⭐
+		order.Items[i].ID = uuid.Nil
 	}
 
+	// 3. Массовое сохранение элементов
+	if err := tx.Create(&order.Items).Error; err != nil {
+		tx.Rollback()
+		return uuid.Nil, err
+	}
+
+	// 4. Фиксация транзакции
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
 		return uuid.Nil, err

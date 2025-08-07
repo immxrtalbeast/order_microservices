@@ -47,3 +47,15 @@ func ConvertStatusToProto(status string) order.OrderStatus {
 		return order.OrderStatus_CREATED
 	}
 }
+
+func ConvertItemstoEventItems(items []domain.OrderItem) []domain.OrderItemEvent {
+	order_items := make([]domain.OrderItemEvent, len(items))
+	for i, item := range items {
+		order_items[i] = domain.OrderItemEvent{
+			GoodID:   item.ProductID,
+			Quantity: item.Quantity,
+		}
+	}
+
+	return order_items
+}

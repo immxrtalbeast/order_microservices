@@ -8,9 +8,9 @@ import (
 )
 
 type OrderCreatedEvent struct {
-	OrderID  uuid.UUID   `json:"order_id"`
-	Products []OrderItem `json:"products"`
-	UserID   uuid.UUID   `json:"user_id"`
+	OrderID  uuid.UUID        `json:"order_id"`
+	Products []OrderItemEvent `json:"products"`
+	UserID   uuid.UUID        `json:"user_id"`
 }
 
 type Order struct {
