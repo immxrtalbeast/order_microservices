@@ -5,9 +5,13 @@ import (
 	"log/slog"
 	"os"
 
+	"immxrtalbeast/order_microservices/internal/pkg/kafka"
+	"immxrtalbeast/order_microservices/saga-service/internal/client"
 	"immxrtalbeast/order_microservices/saga-service/internal/config"
 	"immxrtalbeast/order_microservices/saga-service/internal/domain"
 	"immxrtalbeast/order_microservices/saga-service/internal/lib/logger/slogpretty"
+	"immxrtalbeast/order_microservices/saga-service/internal/service/saga"
+	"immxrtalbeast/order_microservices/saga-service/storage/psql"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -33,6 +37,21 @@ func main() {
 	}
 	log.Info("db connected")
 	db.AutoMigrate(&domain.Saga{})
+
+	producer := kafka.NewProducer(
+		[]string{os.Getenv("KAFKA_ADDRESS")},
+		"inventory",
+	)
+	defer producer.Close()
+	sagaRepo := psql.NewSagaRepository(db)
+	sagaInteractor := saga.NewSagaInteractor(log, producer, sagaRepo)
+	consumer := kafka.NewConsumer(
+		[]string{os.Getenv("KAFKA_ADDRESS")},
+		"saga",
+		"order-service-group",
+	)
+	defer consumer.Close()
+	client.ProcessSagaEvents(consumer, sagaInteractor, log)
 }
 
 const (

@@ -111,9 +111,9 @@ func processInventoryEvents(consumer *kafka.Consumer, goodInteractor *good.GoodI
 			continue
 		}
 		processCtx, processCancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer processCancel()
 		log.Info("Order created event received", event)
 		goodInteractor.ReserveProducts(processCtx, event)
+		processCancel()
 	}
 }
 

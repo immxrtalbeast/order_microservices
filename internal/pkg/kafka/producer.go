@@ -34,6 +34,24 @@ func (p *Producer) PublishEvent(ctx context.Context, key string, event interface
 	})
 }
 
+func (p *Producer) PublishEventWithEventType(ctx context.Context, key string, event interface{}, eventType string) error {
+	payload, err := json.Marshal(event)
+	if err != nil {
+		return fmt.Errorf("failed to marshal event: %w", err)
+	}
+	var headers []kafka.Header
+	eventHeader := kafka.Header{
+		Key:   "Event-Type",
+		Value: []byte(eventType),
+	}
+	headers = append(headers, eventHeader)
+	return p.writer.WriteMessages(ctx, kafka.Message{
+		Key:     []byte(key),
+		Value:   payload,
+		Headers: headers,
+	})
+}
+
 func (p *Producer) Close() error {
 	return p.writer.Close()
 }

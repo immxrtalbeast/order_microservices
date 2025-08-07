@@ -118,13 +118,13 @@ func (gi *GoodInteractor) ReserveProducts(ctx context.Context, event domain.Rese
 	log.Info("reserving goods")
 	if err := gi.goodRepo.ReserveProducts(ctx, event.Products); err != nil {
 		log.Error("failed to reserve products", sl.Err(err))
-		if err := gi.producer.PublishEvent(context.Background(), "InventoryReservedEventFailed", event); err != nil {
+		if err := gi.producer.PublishEventWithEventType(context.Background(), "InventoryReservedEventFailed", event, "InventoryReservedEventFailed"); err != nil {
 			log.Error("Failed to publish event", sl.Err(err))
 		}
 		return
 	}
 	log.Info("goods reserved")
-	if err := gi.producer.PublishEvent(context.Background(), "InventoryReservedEvent", event); err != nil {
+	if err := gi.producer.PublishEventWithEventType(context.Background(), "InventoryReservedEvent", event, "InventoryReservedEvent"); err != nil {
 		log.Error("Failed to publish event", sl.Err(err))
 	}
 	return
