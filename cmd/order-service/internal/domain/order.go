@@ -7,6 +7,12 @@ import (
 	"github.com/google/uuid"
 )
 
+type OrderCreatedEvent struct {
+	OrderID  uuid.UUID   `json:"order_id"`
+	Products []OrderItem `json:"products"`
+	UserID   uuid.UUID   `json:"user_id"`
+}
+
 type Order struct {
 	ID        uuid.UUID   `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	UserID    uuid.UUID   `gorm:"type:uuid;not null;index"` // Связь с пользователем
@@ -23,6 +29,11 @@ type OrderItem struct {
 	ProductID uuid.UUID `gorm:"type:uuid;not null"`
 	Quantity  int       `gorm:"not null"`
 	Price     float64   `gorm:"type:decimal(10,2);not null"`
+}
+
+type OrderItemEvent struct {
+	GoodID   uuid.UUID `json:"product_id"`
+	Quantity int       `json:"quantity"`
 }
 
 type OrderRepository interface {
