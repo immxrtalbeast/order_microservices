@@ -21,11 +21,12 @@ func NewGoodInteractor(goodRepo domain.GoodRepository, log *slog.Logger, produce
 	return &GoodInteractor{goodRepo: goodRepo, log: log, producer: producer}
 }
 
-func (gi *GoodInteractor) AddGood(ctx context.Context, name string, description string, imageLink string, price int, quantityInStock int) error {
+func (gi *GoodInteractor) AddGood(ctx context.Context, name string, description string, imageLink string, price int, volume int, quantityInStock int) error {
 	const op = "service.good.save"
 	log := gi.log.With(
 		slog.String("op", op),
 		slog.String("good", name),
+		slog.Int("volume", volume),
 	)
 
 	log.Info("adding good")
@@ -34,6 +35,7 @@ func (gi *GoodInteractor) AddGood(ctx context.Context, name string, description 
 		Description:     description,
 		ImageLink:       imageLink,
 		Price:           price,
+		Volume:          volume,
 		QuantityInStock: quantityInStock,
 	}
 
@@ -75,7 +77,7 @@ func (gi *GoodInteractor) DeleteGood(ctx context.Context, goodID uuid.UUID) erro
 	return nil
 }
 
-func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name string, description string, imageLink string, price int, quantityInStock int) error {
+func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name string, description string, imageLink string, price int, volume int, quantityInStock int) error {
 	const op = "service.good.update"
 	log := gi.log.With(
 		slog.String("op", op),
@@ -84,6 +86,7 @@ func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name
 		slog.String("description", description),
 		slog.String("imageLink", imageLink),
 		slog.Int("price", price),
+		slog.Int("volume", volume),
 		slog.Int("quantity", quantityInStock),
 	)
 	log.Info("updating good")
@@ -93,6 +96,7 @@ func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name
 		Description:     description,
 		ImageLink:       imageLink,
 		Price:           price,
+		Volume:          volume,
 		QuantityInStock: quantityInStock,
 	}
 	if err := gi.goodRepo.UpdateGood(ctx, good); err != nil {

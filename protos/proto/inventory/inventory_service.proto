@@ -20,7 +20,8 @@ message Product {
     string image_link = 3;
     string description = 4;
     double price = 5;
-    int64 quantity_in_stock = 6;
+    int32 volume = 6;
+    int64 quantity_in_stock = 7;
 }
 
 message ListProductsResponse {
@@ -47,7 +48,8 @@ message AddGoodRequest {
     string description = 2;
     string image_link = 3;
     double price = 4;
-    int64 quantity_in_stock = 5;
+    int32 volume = 5;
+    int64 quantity_in_stock = 6;
 }
 
 message AddGoodResponse{
@@ -68,7 +70,8 @@ message UpdateGoodRequest{
     string image_link = 3;
     string description = 4;
     double price = 5;
-    int64 quantity_in_stock = 6;
+    int32 volume = 6;
+    int64 quantity_in_stock = 7;
 }
 
 message UpdateGoodResponse{

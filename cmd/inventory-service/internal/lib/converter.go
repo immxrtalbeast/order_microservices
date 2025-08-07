@@ -14,6 +14,7 @@ func ConvertGoodToProduct(dbGoods []*domain.Good) []*inventory.Product {
 			ImageLink:       g.ImageLink,
 			Description:     g.Description,
 			Price:           float64(g.Price), // Пример: 1990 -> 19.90
+			Volume:          int32(g.Volume),
 			QuantityInStock: int64(g.QuantityInStock),
 		}
 		pbProducts = append(pbProducts, pbProduct)
