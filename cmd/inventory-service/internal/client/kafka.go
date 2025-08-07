@@ -11,7 +11,7 @@ import (
 
 func ProcessInventoryEvents(consumer *kafka.Consumer, goodInteractor *good.GoodInteractor, log *slog.Logger) {
 	for {
-		readCtx, readCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		readCtx, readCancel := context.WithTimeout(context.Background(), 1*time.Second)
 		var event domain.ReserveProductsEvent
 
 		_, err := consumer.ReadEvent(readCtx, &event)
