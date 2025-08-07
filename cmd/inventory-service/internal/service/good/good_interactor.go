@@ -7,6 +7,7 @@ import (
 	"immxrtalbeast/order_microservices/inventory-service/internal/domain"
 	"immxrtalbeast/order_microservices/inventory-service/internal/lib/logger/sl"
 	"log/slog"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -116,6 +117,7 @@ func (gi *GoodInteractor) ReserveProducts(ctx context.Context, event domain.Rese
 		slog.Any("products", event.Products),
 	)
 	log.Info("reserving goods")
+	time.Sleep(15 * time.Second)
 	if err := gi.goodRepo.ReserveProducts(ctx, event.Products); err != nil {
 		log.Error("failed to reserve products", sl.Err(err))
 		if err := gi.producer.PublishEventWithEventType(context.Background(), "InventoryReservedEventFailed", event, "InventoryReservedEventFailed"); err != nil {
