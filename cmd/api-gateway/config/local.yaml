@@ -8,3 +8,7 @@ clients:
       address: localhost:44045
       timeout: 5s
       retriesCount: 10
+  order:
+       address : localhost:44046
+       timeout: 5s
+       retriesCount: 10
