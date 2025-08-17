@@ -7,9 +7,10 @@ import (
 	"immxrtalbeast/order_microservices/inventory-service/internal/domain"
 	"immxrtalbeast/order_microservices/inventory-service/internal/lib/logger/sl"
 	"log/slog"
-	"time"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type GoodInteractor struct {
@@ -29,7 +30,13 @@ func (gi *GoodInteractor) AddGood(ctx context.Context, name string, description 
 		slog.String("good", name),
 		slog.Int("volume", volume),
 	)
-
+	tracer := otel.Tracer("inventory-service")
+	ctx, span := tracer.Start(ctx, "InvetoryService.AddGood")
+	span.SetAttributes(
+		attribute.String("good.name", name),
+		attribute.Int("good.volume", volume),
+	)
+	defer span.End()
 	log.Info("adding good")
 	good := &domain.Good{
 		Name:            name,
@@ -42,6 +49,7 @@ func (gi *GoodInteractor) AddGood(ctx context.Context, name string, description 
 
 	if err := gi.goodRepo.SaveGood(ctx, good); err != nil {
 		log.Error("failed to save good", sl.Err(err))
+		span.RecordError(err)
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("Good saved")
@@ -54,9 +62,13 @@ func (gi *GoodInteractor) ListProducts(ctx context.Context) ([]*domain.Good, err
 		slog.String("op", op),
 	)
 	log.Info("getting list of goods")
+	tracer := otel.Tracer("inventory-service")
+	ctx, span := tracer.Start(ctx, "InvetoryService.ListProducts")
+	defer span.End()
 	goods, err := gi.goodRepo.ListGoods(ctx)
 	if err != nil {
 		log.Error("failed to get list of goods", sl.Err(err))
+		span.RecordError(err)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("list provided")
@@ -70,8 +82,15 @@ func (gi *GoodInteractor) DeleteGood(ctx context.Context, goodID uuid.UUID) erro
 		slog.String("goodID", goodID.String()),
 	)
 	log.Info("deleting good")
+	tracer := otel.Tracer("inventory-service")
+	ctx, span := tracer.Start(ctx, "InvetoryService.DeleteGood")
+	span.SetAttributes(
+		attribute.String("good.id", goodID.String()),
+	)
+	defer span.End()
 	if err := gi.goodRepo.DeleteGood(ctx, goodID); err != nil {
 		log.Error("failed to delete good", sl.Err(err))
+		span.RecordError(err)
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("good deleted")
@@ -91,6 +110,12 @@ func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name
 		slog.Int("quantity", quantityInStock),
 	)
 	log.Info("updating good")
+	tracer := otel.Tracer("inventory-service")
+	ctx, span := tracer.Start(ctx, "InvetoryService.UpdateGood")
+	span.SetAttributes(
+		attribute.String("good.id", goodID.String()),
+	)
+	defer span.End()
 	good := &domain.Good{
 		ID:              goodID,
 		Name:            name,
@@ -102,6 +127,7 @@ func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name
 	}
 	if err := gi.goodRepo.UpdateGood(ctx, good); err != nil {
 		log.Error("failed to update good", sl.Err(err))
+		span.RecordError(err)
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("good updated")
@@ -117,17 +143,25 @@ func (gi *GoodInteractor) ReserveProducts(ctx context.Context, event domain.Rese
 		slog.Any("products", event.Products),
 	)
 	log.Info("reserving goods")
-	time.Sleep(15 * time.Second)
+	tracer := otel.Tracer("inventory-service")
+	ctx, span := tracer.Start(ctx, "InvetoryService.ReserveProducts")
+	span.SetAttributes(
+		attribute.String("saga.id", event.SagaID.String()),
+	)
+	defer span.End()
 	if err := gi.goodRepo.ReserveProducts(ctx, event.Products); err != nil {
+		span.RecordError(err)
 		log.Error("failed to reserve products", sl.Err(err))
-		if err := gi.producer.PublishEventWithEventType(context.Background(), "InventoryReservedEventFailed", event, "InventoryReservedEventFailed"); err != nil {
+		if err := gi.producer.PublishEventWithEventType(ctx, "InventoryReservedEventFailed", event, "InventoryReservedEventFailed"); err != nil {
+			span.RecordError(err)
 			log.Error("Failed to publish event", sl.Err(err))
 		}
 		return
 	}
 	log.Info("goods reserved")
-	if err := gi.producer.PublishEventWithEventType(context.Background(), "InventoryReservedEvent", event, "InventoryReservedEvent"); err != nil {
+	if err := gi.producer.PublishEventWithEventType(ctx, "InventoryReservedEvent", event, "InventoryReservedEvent"); err != nil {
+		span.RecordError(err)
 		log.Error("Failed to publish event", sl.Err(err))
 	}
-	return
+
 }

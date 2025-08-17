@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"immxrtalbeast/order_microservices/internal/pkg/kafka"
+	"immxrtalbeast/order_microservices/internal/pkg/tracing"
 	"immxrtalbeast/order_microservices/inventory-service/grpcapp"
 	"immxrtalbeast/order_microservices/inventory-service/internal/client"
 	"immxrtalbeast/order_microservices/inventory-service/internal/config"
@@ -25,6 +27,13 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		panic(err)
 	}
+
+	tracer, err := tracing.InitTracer("inventory-service")
+	if err != nil {
+		panic(err)
+	}
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
+
 	dsn := fmt.Sprintf("postgresql://postgres.sqgurzgprfcomirlwgqw:%s@aws-0-eu-north-1.pooler.supabase.com:6543/postgres", os.Getenv("DB_PASS"))
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
