@@ -12,10 +12,12 @@ import (
 	"time"
 
 	"github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 func ProcessSagaEvents(consumer *mykafka.Consumer, sagaInteractor *saga.SagaInteractor, log *slog.Logger) {
 	log.Info("listening kafka")
+	propagator := propagation.TraceContext{}
 	for {
 		readCtx, readCancel := context.WithTimeout(context.Background(), 1*time.Second)
 
@@ -40,7 +42,15 @@ func ProcessSagaEvents(consumer *mykafka.Consumer, sagaInteractor *saga.SagaInte
 			log.Error("missing event type header")
 			continue
 		}
-		processCtx, processCancel := context.WithTimeout(context.Background(), 30*time.Second)
+
+		baseCtx := context.Background()
+		carrier := propagation.MapCarrier{}
+		for _, header := range msg.Headers {
+			carrier[header.Key] = string(header.Value)
+		}
+
+		ctx := propagator.Extract(baseCtx, carrier)
+		processCtx, processCancel := context.WithTimeout(ctx, 30*time.Second)
 		switch eventType {
 		case "OrderCreatedEvent":
 			var event domain.OrderCreatedEvent

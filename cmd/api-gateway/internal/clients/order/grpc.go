@@ -8,6 +8,7 @@ import (
 	"time"
 
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -29,6 +30,7 @@ func New(ctx context.Context, addr string, timeout time.Duration, retriesCount i
 	conn, err := grpc.NewClient(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
 		grpc.WithContextDialer(func(ctx context.Context, addr string) (net.Conn, error) {
 			dialer := net.Dialer{}
 			return dialer.DialContext(ctx, "tcp", addr)

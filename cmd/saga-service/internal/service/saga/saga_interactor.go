@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
 )
 
 type SagaInteractor struct {
@@ -27,7 +28,9 @@ func (si *SagaInteractor) StartSaga(ctx context.Context, event domain.OrderCreat
 		slog.String("op", op),
 	)
 	log.Info("starting saga")
-	time.Sleep(15 * time.Second)
+	tracer := otel.Tracer("saga-service")
+	ctx, span := tracer.Start(ctx, "SagaService.StartSaga")
+	defer span.End()
 	saga := &domain.Saga{
 		CurrentStep: string(domain.StateOrderCreated),
 		UserID:      event.UserID,
@@ -44,28 +47,32 @@ func (si *SagaInteractor) StartSaga(ctx context.Context, event domain.OrderCreat
 	}
 	log.Info("Saga saved! SagaID: ", sagaID)
 
-	go si.ExecuteSaga(saga, event.OrderID, event.Products)
+	si.ExecuteSaga(ctx, saga, event.OrderID, event.Products)
 	return nil
 }
 
-func (si *SagaInteractor) ExecuteSaga(saga *domain.Saga, orderID uuid.UUID, products []domain.OrderItem) {
+func (si *SagaInteractor) ExecuteSaga(ctx context.Context, saga *domain.Saga, orderID uuid.UUID, products []domain.OrderItem) {
 	const op = "service.saga.execute"
 	log := si.log.With(
 		slog.String("op", op),
 		slog.String("sagaID", saga.ID),
 	)
 	log.Info("Executing saga...")
+	tracer := otel.Tracer("saga-service")
+	ctx, span := tracer.Start(ctx, "SagaService.ExecuteSaga")
+	defer span.End()
 	event := domain.ReserveItemsCommand{
 		SagaID:   uuid.MustParse(saga.ID),
 		OrderID:  orderID,
 		Products: products,
 	}
-	if err := si.producer.PublishEvent(context.Background(), "ReserveItemsCommand", event); err != nil {
+	if err := si.producer.PublishEvent(ctx, "ReserveItemsCommand", event); err != nil {
 		log.Error("Failed to publish event", sl.Err(err))
+		span.RecordError(err)
 		return
 	}
 	log.Info("Command to reserve items sended!")
-	return
+
 }
 
 func (si *SagaInteractor) HandleProductsReserved(ctx context.Context, event domain.ProductsReservedEvent) {
@@ -74,9 +81,13 @@ func (si *SagaInteractor) HandleProductsReserved(ctx context.Context, event doma
 		slog.String("op", op),
 		slog.String("sagaID", event.SagaID.String()),
 	)
+	tracer := otel.Tracer("saga-service")
+	ctx, span := tracer.Start(context.Background(), "SagaService.HandleProductsReserved")
+	defer span.End()
 	saga, err := si.sagaRepo.Saga(ctx, event.SagaID)
 	if err != nil {
 		log.Error("Failed to get saga", sl.Err(err))
+		span.RecordError(err)
 		return
 	}
 	saga.CurrentStep = string(domain.StateInventoryReserved)
@@ -84,8 +95,9 @@ func (si *SagaInteractor) HandleProductsReserved(ctx context.Context, event doma
 	err = si.sagaRepo.UpdateSaga(ctx, saga)
 	if err != nil {
 		log.Error("Failed to save saga", sl.Err(err))
+		span.RecordError(err)
 		return
 	}
 	log.Info("Products reservation handled")
-	return
+
 }

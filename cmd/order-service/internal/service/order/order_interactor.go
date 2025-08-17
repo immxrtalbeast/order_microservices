@@ -10,6 +10,8 @@ import (
 	"log/slog"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type OrderInteractor struct {
@@ -31,6 +33,13 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 	)
 
 	log.Info("creating order")
+	tracer := otel.Tracer("order-service")
+	ctx, span := tracer.Start(ctx, "OrderService.CreateOrder")
+	span.SetAttributes(
+		attribute.String("user.id", userID.String()),
+		attribute.Int("goods.listLength", len(items)),
+	)
+	defer span.End()
 	var total float64
 	for _, item := range items {
 		total += item.Price * float64(item.Quantity)
@@ -51,6 +60,7 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 
 	if _, err := oi.orderRepo.SaveOrder(ctx, order); err != nil {
 		log.Error("failed to create order", sl.Err(err))
+		span.RecordError(err)
 		return uuid.Nil, "", fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -64,6 +74,7 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 
 	if err := oi.producer.PublishEventWithEventType(ctx, "OrderCreatedEvent", event, "OrderCreatedEvent"); err != nil {
 		log.Error("failed to publish event", sl.Err(err))
+		span.RecordError(err)
 	}
 
 	log.Info("Order created")
@@ -78,10 +89,16 @@ func (oi *OrderInteractor) Order(ctx context.Context, orderID uuid.UUID) (domain
 	)
 
 	log.Info("getting order")
-
+	tracer := otel.Tracer("order-service")
+	ctx, span := tracer.Start(ctx, "OrderService.GetOrder")
+	span.SetAttributes(
+		attribute.String("order.id", orderID.String()),
+	)
+	defer span.End()
 	order, err := oi.orderRepo.GetOrder(ctx, orderID)
 	if err != nil {
 		log.Error("failed to get order", sl.Err(err))
+		span.RecordError(err)
 		return domain.Order{}, fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("Order getting")
@@ -96,12 +113,19 @@ func (oi *OrderInteractor) ListOrdersByUser(ctx context.Context, userID uuid.UUI
 		slog.Int("limit", limit),
 		slog.Int("offset", offset),
 	)
-
 	log.Info("getting a list of orders by user")
+
+	tracer := otel.Tracer("order-service")
+	ctx, span := tracer.Start(ctx, "OrderService.ListOrdersByUser")
+	span.SetAttributes(
+		attribute.String("user.id", userID.String()),
+	)
+	defer span.End()
 
 	orders, err := oi.orderRepo.ListOrdersByUser(ctx, userID, limit, offset)
 	if err != nil {
 		log.Error("failed to get a list of orders by user", sl.Err(err))
+		span.RecordError(err)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("orders listed", slog.Int("count", len(orders)))
@@ -116,8 +140,17 @@ func (oi *OrderInteractor) UpdateOrderStatus(ctx context.Context, orderID uuid.U
 		slog.String("status", status),
 	)
 	log.Info("updating order status")
+	tracer := otel.Tracer("order-service")
+	ctx, span := tracer.Start(ctx, "OrderService.UpdateOrderStatus")
+	span.SetAttributes(
+		attribute.String("order.id", orderID.String()),
+		attribute.String("order.status", status),
+	)
+	defer span.End()
+
 	if err := oi.orderRepo.UpdateOrderStatus(ctx, orderID, status); err != nil {
 		log.Error("failed to update order status", sl.Err(err))
+		span.RecordError(err)
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("order status updated")

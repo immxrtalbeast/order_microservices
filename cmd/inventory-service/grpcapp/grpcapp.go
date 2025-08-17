@@ -9,6 +9,7 @@ import (
 	inventorygrpc "immxrtalbeast/order_microservices/inventory-service/internal/grpc/inventory"
 
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -30,9 +31,11 @@ func New(log *slog.Logger, inventoryInteractor domain.InventoryInteractor, port 
 		}),
 	}
 
-	gRPCServer := grpc.NewServer(grpc.ChainUnaryInterceptor(
-		recovery.UnaryServerInterceptor(recoveryOpts...),
-	))
+	gRPCServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			recovery.UnaryServerInterceptor(recoveryOpts...),
+		),
+		grpc.StatsHandler(otelgrpc.NewServerHandler()))
 
 	inventorygrpc.Register(gRPCServer, inventoryInteractor)
 
