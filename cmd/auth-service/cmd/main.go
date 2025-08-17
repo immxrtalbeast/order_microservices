@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"immxrtalbeast/order_microservices/auth-service/internal/app"
 	"immxrtalbeast/order_microservices/auth-service/internal/config"
 	"immxrtalbeast/order_microservices/auth-service/internal/lib/logger/slogpretty"
+	"immxrtalbeast/order_microservices/internal/pkg/tracing"
 	"log/slog"
 	"os"
 
@@ -18,6 +20,12 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		panic(err)
 	}
+	tracer, err := tracing.InitTracer("auth-service")
+	if err != nil {
+		panic(err)
+	}
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
+
 	dsn := fmt.Sprintf("postgresql://postgres.sqgurzgprfcomirlwgqw:%s@aws-0-eu-north-1.pooler.supabase.com:6543/postgres", os.Getenv("DB_PASS"))
 	application := app.New(log, cfg.GRPC.Port, dsn, cfg.TokenTTL, os.Getenv("APP_SECRET"))
 

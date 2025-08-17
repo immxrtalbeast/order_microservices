@@ -7,8 +7,11 @@ import (
 	"immxrtalbeast/order_microservices/api-gateway/internal/config"
 	"immxrtalbeast/order_microservices/api-gateway/internal/controller"
 	"immxrtalbeast/order_microservices/api-gateway/internal/middleware"
+	"immxrtalbeast/order_microservices/internal/pkg/tracing"
 	"log/slog"
 	"os"
+
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -18,6 +21,12 @@ func main() {
 	cfg := config.MustLoad()
 
 	log := setupLogger()
+
+	tracer, err := tracing.InitTracer("api-gateway")
+	if err != nil {
+		panic(err)
+	}
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	log.Info(
 		"starting api-gateway",
@@ -50,6 +59,7 @@ func main() {
 	inventoryController := controller.NewInventoryController(inventoryClient)
 
 	router := gin.Default()
+	router.Use(otelgin.Middleware("api-gateway"))
 	api := router.Group("/api/v1")
 	{
 		api.POST("/register", userController.Register)

@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -45,23 +47,29 @@ func (a *Auth) Login(ctx context.Context, email string, password string) (string
 	)
 
 	log.Info("attempting to login user")
-
+	tracer := otel.Tracer("user-service")
+	ctx, span := tracer.Start(ctx, "UserService.Login")
+	span.SetAttributes(
+		attribute.String("user.email", email),
+		attribute.String("user.password", password),
+	)
+	defer span.End()
 	user, err := a.usrRepo.User(ctx, email)
 	if err != nil {
 		if errors.Is(err, psql.ErrUserNotFound) {
 			a.log.Warn("user not found", sl.Err(err))
-
+			span.RecordError(err)
 			return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
 		}
 
 		a.log.Error("failed to get user", sl.Err(err))
-
+		span.RecordError(err)
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
 	if err := bcrypt.CompareHashAndPassword(user.PassHash, []byte(password)); err != nil {
 		a.log.Info("invalid credentials", sl.Err(err))
-
+		span.RecordError(err)
 		return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
 	}
 
@@ -70,7 +78,7 @@ func (a *Auth) Login(ctx context.Context, email string, password string) (string
 	token, err := jwt.NewToken(&user, a.tokenTTL, a.appSecret)
 	if err != nil {
 		a.log.Error("failed to generate token", sl.Err(err))
-
+		span.RecordError(err)
 		return "", fmt.Errorf("%s: %w", op, err)
 	}
 
@@ -84,13 +92,18 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email string, pass string) (
 		slog.String("op", op),
 		slog.String("email", email),
 	)
-
+	tracer := otel.Tracer("user-service")
+	ctx, span := tracer.Start(ctx, "UserService.Login")
+	span.SetAttributes(
+		attribute.String("user.email", email),
+	)
+	defer span.End()
 	log.Info("registering user")
 
 	passHash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
 	if err != nil {
 		log.Error("failed to generate password hash", sl.Err(err))
-
+		span.RecordError(err)
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 	user := domain.User{
@@ -101,29 +114,9 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email string, pass string) (
 	id, err := a.usrRepo.SaveUser(ctx, &user)
 	if err != nil {
 		log.Error("failed to save user", sl.Err(err))
-
+		span.RecordError(err)
 		return uuid.Nil, fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("user registered")
 	return id, nil
 }
-
-// func (a *Auth) IsAdmin(ctx context.Context, userID int64) (bool, error) {
-// 	const op = "Auth.IsAdmin"
-
-// 	log := a.log.With(
-// 		slog.String("op", op),
-// 		slog.Int64("user_id", userID),
-// 	)
-
-// 	log.Info("checking if user is admin")
-
-// 	isAdmin, err := a.usrRepo.IsAdmin(ctx, userID)
-// 	if err != nil {
-// 		return false, fmt.Errorf("%s: %w", op, err)
-// 	}
-
-// 	log.Info("checked if user is admin", slog.Bool("is_admin", isAdmin))
-
-// 	return isAdmin, nil
-// }
