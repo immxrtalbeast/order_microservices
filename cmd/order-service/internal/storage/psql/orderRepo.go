@@ -2,6 +2,8 @@ package psql
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/domain"
 
@@ -18,6 +20,10 @@ func NewOrderRepository(db *gorm.DB) *OrderRepository {
 }
 
 func (r *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) (uuid.UUID, error) {
+	if len(order.Items) == 0 {
+		return uuid.Nil, errors.New("order items cannot be empty")
+	}
+
 	tx := r.db.WithContext(ctx).Begin()
 	if tx.Error != nil {
 		return uuid.Nil, tx.Error
@@ -55,8 +61,16 @@ func (r *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) (u
 func (r *OrderRepository) GetOrder(ctx context.Context, orderID uuid.UUID) (domain.Order, error) {
 	var order domain.Order
 
-	err := r.db.WithContext(ctx).Where("id = ?", orderID).First(order).Error
-	return order, err
+	result := r.db.WithContext(ctx).Preload("Items").Where("id = ?", orderID).First(&order)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return domain.Order{}, fmt.Errorf("order not found")
+		}
+		return domain.Order{}, fmt.Errorf("database error: %w", result.Error)
+	}
+
+	return order, nil
 }
 
 func (r *OrderRepository) UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, status string) error {
