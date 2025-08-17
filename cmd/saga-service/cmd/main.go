@@ -27,7 +27,7 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		panic(err)
 	}
-	tracer, err := tracing.InitTracer("order-service")
+	tracer, err := tracing.InitTracer("saga-service")
 	if err != nil {
 		panic(err)
 	}

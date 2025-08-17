@@ -6,6 +6,8 @@ import (
 	"fmt"
 
 	"github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 type Producer struct {
@@ -27,19 +29,46 @@ func (p *Producer) PublishEvent(ctx context.Context, key string, event interface
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
+	headers := make([]kafka.Header, 0)
+
+	propagator := propagation.TraceContext{}
+	carrier := propagation.MapCarrier{}
+	propagator.Inject(ctx, carrier)
+	for k, v := range carrier {
+		headers = append(headers, kafka.Header{
+			Key:   k,
+			Value: []byte(v),
+		})
+	}
 
 	return p.writer.WriteMessages(ctx, kafka.Message{
-		Key:   []byte(key),
-		Value: payload,
+		Key:     []byte(key),
+		Value:   payload,
+		Headers: headers,
 	})
 }
 
 func (p *Producer) PublishEventWithEventType(ctx context.Context, key string, event interface{}, eventType string) error {
+	tracer := otel.Tracer("kafka-producer")
+	ctx, span := tracer.Start(ctx, "KafkaProducer.PublishEventWithEventType")
+	defer span.End()
+
 	payload, err := json.Marshal(event)
 	if err != nil {
 		return fmt.Errorf("failed to marshal event: %w", err)
 	}
-	var headers []kafka.Header
+	headers := make([]kafka.Header, 0)
+
+	propagator := propagation.TraceContext{}
+	carrier := propagation.MapCarrier{}
+	propagator.Inject(ctx, carrier)
+	for k, v := range carrier {
+		headers = append(headers, kafka.Header{
+			Key:   k,
+			Value: []byte(v),
+		})
+	}
+
 	eventHeader := kafka.Header{
 		Key:   "Event-Type",
 		Value: []byte(eventType),

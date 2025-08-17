@@ -31,7 +31,6 @@ func (si *SagaInteractor) StartSaga(ctx context.Context, event domain.OrderCreat
 	tracer := otel.Tracer("saga-service")
 	ctx, span := tracer.Start(ctx, "SagaService.StartSaga")
 	defer span.End()
-	time.Sleep(15 * time.Second)
 	saga := &domain.Saga{
 		CurrentStep: string(domain.StateOrderCreated),
 		UserID:      event.UserID,
@@ -48,7 +47,7 @@ func (si *SagaInteractor) StartSaga(ctx context.Context, event domain.OrderCreat
 	}
 	log.Info("Saga saved! SagaID: ", sagaID)
 
-	go si.ExecuteSaga(ctx, saga, event.OrderID, event.Products)
+	si.ExecuteSaga(ctx, saga, event.OrderID, event.Products)
 	return nil
 }
 
