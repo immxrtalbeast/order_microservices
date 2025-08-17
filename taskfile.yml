@@ -1,0 +1,32 @@
+version: '3'
+timeout: 10s
+tasks:
+  up:
+    deps: [run-inventory, run-auth, run-order, run-saga, run-api]
+    parallel: true
+
+
+  run-inventory:
+    dir: ./cmd/inventory-service
+    cmds: 
+      - go run ./cmd/main.go --config=./config/local.yaml
+
+  run-auth:
+    dir: ./cmd/auth-service
+    cmds: 
+      - go run ./cmd/main.go --config=./config/local.yaml
+
+  run-order:
+    dir: ./cmd/order-service
+    cmds: 
+      - go run ./cmd/main.go --config=./config/local.yaml
+
+  run-saga:
+    dir: ./cmd/saga-service
+    cmds: 
+      - go run ./cmd/main.go --config=./config/local.yaml
+      
+  run-api:
+    dir: ./cmd/api-gateway
+    cmds: 
+      - go run ./cmd/main.go --config=./config/local.yaml
