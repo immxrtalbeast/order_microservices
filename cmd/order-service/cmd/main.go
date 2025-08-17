@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"immxrtalbeast/order_microservices/cmd/order-service/grpcapp"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/config"
@@ -10,6 +11,7 @@ import (
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/service/order"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/storage/psql"
 	"immxrtalbeast/order_microservices/internal/pkg/kafka"
+	"immxrtalbeast/order_microservices/internal/pkg/tracing"
 	"log/slog"
 	"os"
 
@@ -26,7 +28,11 @@ func main() {
 		log.Error("failed to load .env file", sl.Err(err))
 		os.Exit(1)
 	}
-
+	tracer, err := tracing.InitTracer("order-service")
+	if err != nil {
+		panic(err)
+	}
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
 	dsn := fmt.Sprintf("postgresql://postgres.sqgurzgprfcomirlwgqw:%s@aws-0-eu-north-1.pooler.supabase.com:6543/postgres", os.Getenv("DB_PASS"))
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
