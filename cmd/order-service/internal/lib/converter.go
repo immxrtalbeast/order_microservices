@@ -13,6 +13,7 @@ func ConvertOrderToProto(o domain.Order) *order.Order {
 		items[i] = &order.OrderItem{
 			ProductId: item.ProductID.String(),
 			Quantity:  int32(item.Quantity),
+			Price:     item.Price,
 		}
 	}
 
@@ -54,6 +55,7 @@ func ConvertItemstoEventItems(items []domain.OrderItem) []domain.OrderItemEvent 
 		order_items[i] = domain.OrderItemEvent{
 			GoodID:   item.ProductID,
 			Quantity: item.Quantity,
+			Price:    item.Price,
 		}
 	}
 

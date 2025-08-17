@@ -34,6 +34,7 @@ type OrderItem struct {
 type OrderItemEvent struct {
 	GoodID   uuid.UUID `json:"product_id"`
 	Quantity int       `json:"quantity"`
+	Price    float64   `json:"price"`
 }
 
 type OrderRepository interface {

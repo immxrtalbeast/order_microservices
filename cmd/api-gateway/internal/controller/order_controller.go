@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type OrderController struct {
@@ -20,8 +21,8 @@ func NewOrderController(orderService *ordergrpc.Client) *OrderController {
 func (c *OrderController) CreateOrder(ctx *gin.Context) {
 	type OrderItem struct {
 		ProductID string  `json:"product_id" binding:"required"`
-		Quantity  int32   `json:"quantity" binding:"required"`
-		Price     float64 `json:"price" binding:"required"`
+		Quantity  int32   `json:"quantity" binding:"required,min=1"`
+		Price     float64 `json:"price" binding:"required,min=0.01"`
 	}
 
 	type CreateOrderRequest struct {
@@ -63,7 +64,8 @@ func (c *OrderController) CreateOrder(ctx *gin.Context) {
 
 func (c *OrderController) GetOrder(ctx *gin.Context) {
 	orderID := ctx.Param("id")
-	if orderID == "" {
+
+	if _, err := uuid.Parse(orderID); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "order ID is required"})
 		return
 	}
