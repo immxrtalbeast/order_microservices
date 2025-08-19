@@ -19,12 +19,13 @@ type Saga struct {
 type SagaState string
 
 const (
-	StateOrderCreated      SagaState = "ORDER_CREATED"
-	StateInventoryReserved SagaState = "INVENTORY_RESERVED"
-	StatePaymentProcessing SagaState = "PAYMENT_PROCESSING"
-	StateCompleted         SagaState = "COMPLETED"
-	StateCompensating      SagaState = "COMPENSATING"
-	StateCompensated       SagaState = "COMPENSATED"
+	StateOrderCreated       SagaState = "ORDER_CREATED"
+	StateInventoryReserved  SagaState = "INVENTORY_RESERVED"
+	StatePaymentProcessing  SagaState = "PAYMENT_PROCESSING"
+	StateCompleted          SagaState = "COMPLETED"
+	StateInventoryReleasing SagaState = "RELEASING"
+	StatePaymentError       SagaState = "PAYMENT_ERROR"
+	StateCompensated        SagaState = "COMPENSATED"
 )
 
 type SagaInteractor interface {

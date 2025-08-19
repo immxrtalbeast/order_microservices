@@ -61,12 +61,12 @@ func (si *SagaInteractor) ExecuteSaga(ctx context.Context, saga *domain.Saga, or
 	tracer := otel.Tracer("saga-service")
 	ctx, span := tracer.Start(ctx, "SagaService.ExecuteSaga")
 	defer span.End()
-	event := domain.ReserveItemsCommand{
+	command := domain.ReserveItemsCommand{
 		SagaID:   uuid.MustParse(saga.ID),
 		OrderID:  orderID,
 		Products: products,
 	}
-	if err := si.producer.PublishEvent(ctx, "ReserveItemsCommand", event); err != nil {
+	if err := si.producer.PublishEventWithEventType(ctx, "InventoryReserveItemsCommand", command, "InventoryReserveItemsCommand"); err != nil {
 		log.Error("Failed to publish event", sl.Err(err))
 		span.RecordError(err)
 		return
@@ -82,7 +82,7 @@ func (si *SagaInteractor) HandleProductsReserved(ctx context.Context, event doma
 		slog.String("sagaID", event.SagaID.String()),
 	)
 	tracer := otel.Tracer("saga-service")
-	ctx, span := tracer.Start(context.Background(), "SagaService.HandleProductsReserved")
+	ctx, span := tracer.Start(ctx, "SagaService.HandleProductsReserved")
 	defer span.End()
 	saga, err := si.sagaRepo.Saga(ctx, event.SagaID)
 	if err != nil {
@@ -100,4 +100,38 @@ func (si *SagaInteractor) HandleProductsReserved(ctx context.Context, event doma
 	}
 	log.Info("Products reservation handled")
 
+}
+
+func (si *SagaInteractor) HandleProductsReservedError(ctx context.Context, event domain.ProductsReservedEvent) {
+	const op = "service.saga.HandleProductsReservedError"
+	log := si.log.With(
+		slog.String("op", op),
+		slog.String("sagaID", event.SagaID.String()),
+	)
+	tracer := otel.Tracer("saga-service")
+	ctx, span := tracer.Start(ctx, "SagaService.HandleProductsReservedError")
+	defer span.End()
+	saga, err := si.sagaRepo.Saga(ctx, event.SagaID)
+	if err != nil {
+		log.Error("Failed to get saga", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+	saga.CurrentStep = string(domain.StateInventoryReleasing)
+	saga.UpdatedAt = time.Now()
+	if err = si.sagaRepo.UpdateSaga(ctx, saga); err != nil {
+		log.Error("Failed to save saga", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+	command := domain.CancelOrderCommand{
+		OrderID: event.OrderID,
+		SagaID:  event.SagaID,
+	}
+	if err := si.producer.PublishEventWithEventType(ctx, "OrderCancel", command, "OrderCancel"); err != nil {
+		log.Error("Failed to publish event", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+	log.Info("Command to cancel order sended!")
 }

@@ -12,3 +12,8 @@ type ReserveItemsCommand struct {
 	SagaID   uuid.UUID   `json:"saga_id"`
 	Products []OrderItem `json:"products"`
 }
+
+type CancelOrderCommand struct {
+	OrderID uuid.UUID `json:"order_id"`
+	SagaID  uuid.UUID `json:"saga_id"`
+}
