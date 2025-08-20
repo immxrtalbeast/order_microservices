@@ -149,7 +149,8 @@ func (gi *GoodInteractor) ReserveProducts(ctx context.Context, event domain.Rese
 		attribute.String("saga.id", event.SagaID.String()),
 	)
 	defer span.End()
-	if err := gi.goodRepo.ReserveProducts(ctx, event.Products); err != nil {
+	order_sum, err := gi.goodRepo.ReserveProducts(ctx, event.Products)
+	if err != nil {
 		span.RecordError(err)
 		log.Error("failed to reserve products", sl.Err(err))
 		if err := gi.producer.PublishEventWithEventType(ctx, "InventoryReservedEventFailed", event, "InventoryReservedEventFailed"); err != nil {
@@ -158,8 +159,14 @@ func (gi *GoodInteractor) ReserveProducts(ctx context.Context, event domain.Rese
 		}
 		return
 	}
+	reply := domain.ReserveProductsEventReply{
+		OrderID:  event.OrderID,
+		SagaID:   event.SagaID,
+		Products: event.Products,
+		TotalSum: order_sum,
+	}
 	log.Info("goods reserved")
-	if err := gi.producer.PublishEventWithEventType(ctx, "InventoryReservedEvent", event, "InventoryReservedEvent"); err != nil {
+	if err := gi.producer.PublishEventWithEventType(ctx, "InventoryReservedEvent", reply, "InventoryReservedEvent"); err != nil {
 		span.RecordError(err)
 		log.Error("Failed to publish event", sl.Err(err))
 	}

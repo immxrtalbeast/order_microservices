@@ -298,9 +298,10 @@ func (x *ReserveItemsRequest) GetItems() []*ReserveItem {
 }
 
 type ReserveItemsResponse struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	ReservationId int64                  `protobuf:"varint,2,opt,name=reservation_id,json=reservationId,proto3" json:"reservation_id,omitempty"` // Уникальный ID резервации
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	Success bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	// int64 reservation_id = 2;  // Уникальный ID резервации
+	TotalOrderSum int64 `protobuf:"varint,2,opt,name=total_order_sum,json=totalOrderSum,proto3" json:"total_order_sum,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -342,9 +343,9 @@ func (x *ReserveItemsResponse) GetSuccess() bool {
 	return false
 }
 
-func (x *ReserveItemsResponse) GetReservationId() int64 {
+func (x *ReserveItemsResponse) GetTotalOrderSum() int64 {
 	if x != nil {
-		return x.ReservationId
+		return x.TotalOrderSum
 	}
 	return 0
 }
@@ -724,10 +725,10 @@ const file_inventory_inventory_service_proto_rawDesc = "" +
 	"\bquantity\x18\x02 \x01(\x03R\bquantity\"^\n" +
 	"\x13ReserveItemsRequest\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\x03R\aorderId\x12,\n" +
-	"\x05items\x18\x02 \x03(\v2\x16.inventory.ReserveItemR\x05items\"W\n" +
+	"\x05items\x18\x02 \x03(\v2\x16.inventory.ReserveItemR\x05items\"X\n" +
 	"\x14ReserveItemsResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\x12%\n" +
-	"\x0ereservation_id\x18\x02 \x01(\x03R\rreservationId\"\xbf\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12&\n" +
+	"\x0ftotal_order_sum\x18\x02 \x01(\x03R\rtotalOrderSum\"\xbf\x01\n" +
 	"\x0eAddGoodRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
 	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1d\n" +
