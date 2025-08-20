@@ -30,7 +30,7 @@ func (r *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) (u
 	}
 
 	// 1. Сохраняем основной заказ
-	if err := tx.Create(order).Error; err != nil {
+	if err := tx.Omit("Items").Create(order).Error; err != nil {
 		tx.Rollback()
 		return uuid.Nil, err
 	}
@@ -38,9 +38,8 @@ func (r *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) (u
 	// 2. Подготовка элементов
 	for i := range order.Items {
 		order.Items[i].OrderID = order.ID // Устанавливаем связь
+		order.Items[i].ID = uuid.Nil      // Сбрасываем ID для генерации нового
 
-		// ⭐ ВАЖНО: Сбрасываем ID чтобы БД сгенерировала новый UUID ⭐
-		order.Items[i].ID = uuid.Nil
 	}
 
 	// 3. Массовое сохранение элементов
@@ -56,6 +55,10 @@ func (r *OrderRepository) SaveOrder(ctx context.Context, order *domain.Order) (u
 	}
 
 	return order.ID, nil
+}
+
+func (r *OrderRepository) DeleteOrder(ctx context.Context, orderID uuid.UUID) error {
+	return r.db.WithContext(ctx).Where("id = ?", orderID).Delete(&domain.Order{}).Error
 }
 
 func (r *OrderRepository) GetOrder(ctx context.Context, orderID uuid.UUID) (domain.Order, error) {
@@ -80,6 +83,6 @@ func (r *OrderRepository) UpdateOrderStatus(ctx context.Context, orderID uuid.UU
 
 func (r *OrderRepository) ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]domain.Order, error) {
 	var orders []domain.Order
-	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Limit(limit).Offset(offset).Scan(orders).Error
+	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Limit(limit).Offset(offset).Find(orders).Error
 	return orders, err
 }

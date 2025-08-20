@@ -40,6 +40,7 @@ type OrderItemEvent struct {
 type OrderRepository interface {
 	SaveOrder(ctx context.Context, order *Order) (uuid.UUID, error)
 	GetOrder(ctx context.Context, orderID uuid.UUID) (Order, error)
+	DeleteOrder(ctx context.Context, orderID uuid.UUID) error
 	UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, status string) error
 	ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Order, error)
 }
@@ -48,4 +49,5 @@ type OrderInteractor interface {
 	CreateOrder(ctx context.Context, userID uuid.UUID, orderItem []OrderItem) (uuid.UUID, string, error)
 	Order(ctx context.Context, orderID uuid.UUID) (Order, error)
 	ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Order, error)
+	DeleteOrder(ctx context.Context, orderID uuid.UUID) error
 }

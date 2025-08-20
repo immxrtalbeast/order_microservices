@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/google/uuid"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
@@ -59,6 +60,18 @@ func (c *Client) CreateOrder(ctx context.Context, userID string, items []*order.
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
 	return resp, nil
+}
+
+func (c *Client) DeleteOrder(ctx context.Context, orderID uuid.UUID) error {
+	const op = "grpc.DeleteOrder"
+
+	_, err := c.api.DeleteOrder(ctx, &order.DeleteOrderRequest{
+		OrderId: orderID.String(),
+	})
+	if err != nil {
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	return nil
 }
 
 func (c *Client) GetOrder(ctx context.Context, orderID string) (*order.OrderResponse, error) {

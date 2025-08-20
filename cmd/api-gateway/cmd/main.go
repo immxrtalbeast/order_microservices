@@ -4,6 +4,7 @@ import (
 	"context"
 	authgrpc "immxrtalbeast/order_microservices/api-gateway/internal/clients/auth"
 	inventorygrpc "immxrtalbeast/order_microservices/api-gateway/internal/clients/inventory"
+	ordergrpc "immxrtalbeast/order_microservices/api-gateway/internal/clients/order"
 	"immxrtalbeast/order_microservices/api-gateway/internal/config"
 	"immxrtalbeast/order_microservices/api-gateway/internal/controller"
 	"immxrtalbeast/order_microservices/api-gateway/internal/middleware"
@@ -43,6 +44,7 @@ func main() {
 	authMiddleware := middleware.AuthMiddleware(os.Getenv("APP_SECRET"))
 
 	if err != nil {
+		log.Error("failed to connect auth service", slog.Any("error", err))
 		panic("failed to connect authClient")
 	}
 	inventoryClient, err := inventorygrpc.New(
@@ -52,11 +54,24 @@ func main() {
 		cfg.Clients.Inventory.RetriesCount,
 	)
 	if err != nil {
-		panic("failed to connect authClient")
+		log.Error("failed to connect inventory service", slog.Any("error", err))
+		panic("failed to connect inventory service")
+	}
+
+	orderClient, err := ordergrpc.New(
+		context.Background(),
+		cfg.Clients.Order.Address,
+		cfg.Clients.Order.Timeout,
+		cfg.Clients.Order.RetriesCount,
+	)
+	if err != nil {
+		log.Error("failed to connect order service", slog.Any("error", err))
+		panic("failed to connect order service")
 	}
 
 	userController := controller.NewUserController(authClient, cfg.TokenTTL)
 	inventoryController := controller.NewInventoryController(inventoryClient)
+	orderController := controller.NewOrderController(orderClient)
 
 	router := gin.Default()
 	router.Use(otelgin.Middleware("api-gateway"))
@@ -72,6 +87,14 @@ func main() {
 		inventory.GET("/goods", inventoryController.ListGoods)
 		inventory.PATCH("/update-good", inventoryController.UpdateGood)
 		inventory.DELETE("/:id", inventoryController.DeleteGood)
+	}
+	order := api.Group("/order")
+	order.Use(authMiddleware)
+	{
+		order.POST("/create-order", orderController.CreateOrder)
+		order.GET("/order/:id", orderController.GetOrder)
+		order.GET("/list-orders/:id", orderController.ListOrders)
+		order.DELETE("/:id", orderController.DeleteOrder)
 	}
 	router.Run(":8080")
 

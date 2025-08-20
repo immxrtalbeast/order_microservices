@@ -81,6 +81,28 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 	return order.ID, order.Status, nil
 }
 
+func (oi *OrderInteractor) DeleteOrder(ctx context.Context, orderID uuid.UUID) error {
+	const op = "service.order.delete"
+	log := oi.log.With(
+		slog.String("op", op),
+		slog.String("order_id", orderID.String()),
+	)
+	log.Info("deleting order")
+	tracer := otel.Tracer("order-service")
+	ctx, span := tracer.Start(ctx, "OrderService.DeleteOrder")
+	span.SetAttributes(
+		attribute.String("order.id", orderID.String()),
+	)
+	defer span.End()
+	if err := oi.orderRepo.DeleteOrder(ctx, orderID); err != nil {
+		log.Error("failed to delete order", sl.Err(err))
+		span.RecordError(err)
+		return fmt.Errorf("%s: %w", op, err)
+	}
+	log.Info("order deleted")
+	return nil
+}
+
 func (oi *OrderInteractor) Order(ctx context.Context, orderID uuid.UUID) (domain.Order, error) {
 	const op = "service.order.get"
 	log := oi.log.With(

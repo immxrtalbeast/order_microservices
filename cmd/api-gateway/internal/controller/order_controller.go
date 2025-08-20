@@ -62,6 +62,20 @@ func (c *OrderController) CreateOrder(ctx *gin.Context) {
 	})
 }
 
+func (c *OrderController) DeleteOrder(ctx *gin.Context) {
+	orderID := ctx.Param("id")
+	if err := c.orderService.DeleteOrder(ctx, uuid.MustParse(orderID)); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":   "failed to delete order",
+			"details": err.Error(),
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"message": "good deleted successfully",
+	})
+}
+
 func (c *OrderController) GetOrder(ctx *gin.Context) {
 	orderID := ctx.Param("id")
 

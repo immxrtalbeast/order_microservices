@@ -8,6 +8,7 @@ service OrderService{
     rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
     rpc Order(OrderRequest) returns (OrderResponse);
     rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+    rpc DeleteOrder(DeleteOrderRequest) returns (DeleteOrderResponse);
 }
 
 message CreateOrderRequest{ 
@@ -42,6 +43,14 @@ message ListOrdersRequest{
 
 message ListOrdersResponse{
     repeated Order orders = 1;
+}
+
+message DeleteOrderRequest{
+    string order_id = 1;
+}
+
+message DeleteOrderResponse{
+    bool success = 1;
 }
 
 message Order{

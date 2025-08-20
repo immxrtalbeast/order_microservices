@@ -47,6 +47,7 @@ func (s *serverAPI) CreateOrder(ctx context.Context, in *order.CreateOrderReques
 		domainItems[i] = domain.OrderItem{
 			ProductID: productID,
 			Quantity:  int(item.Quantity),
+			Price:     item.Price,
 		}
 	}
 
@@ -59,6 +60,23 @@ func (s *serverAPI) CreateOrder(ctx context.Context, in *order.CreateOrderReques
 		OrderId: orderID.String(),
 		Status:  lib.ConvertStatusToProto(statusStr),
 	}, nil
+}
+
+func (s *serverAPI) DeleteOrder(ctx context.Context, in *order.DeleteOrderRequest) (*order.DeleteOrderResponse, error) {
+	if in.OrderId == "" {
+		return nil, status.Error(codes.InvalidArgument, "order ID is required")
+	}
+
+	orderID, err := uuid.Parse(in.OrderId)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid order ID format")
+	}
+
+	if err := s.orderInteractor.DeleteOrder(ctx, orderID); err != nil {
+		return nil, status.Error(codes.Internal, "failed to delete order")
+	}
+
+	return &order.DeleteOrderResponse{Success: true}, nil
 }
 
 func (s *serverAPI) Order(ctx context.Context, in *order.OrderRequest) (*order.OrderResponse, error) {
