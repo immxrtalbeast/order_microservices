@@ -75,6 +75,17 @@ func ProcessSagaEvents(consumer *mykafka.Consumer, sagaInteractor *saga.SagaInte
 				sagaInteractor.HandleProductsReserved(processCtx, event)
 			}()
 
+		case "InventoryReservedEventFailed":
+			var event domain.ProductsReservedEvent
+			if err := json.Unmarshal(msg.Value, &event); err != nil {
+				log.Error("failed to unmarshal event", "type", eventType, "error", err)
+				continue
+			}
+			go func() {
+				defer processCancel()
+				sagaInteractor.HandleProductsReservedError(processCtx, event)
+			}()
+
 		case "PaymentProcessedEvent":
 			// ... аналогично
 

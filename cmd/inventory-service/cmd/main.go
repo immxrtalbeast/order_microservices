@@ -48,7 +48,7 @@ func main() {
 	db.AutoMigrate(&domain.Good{})
 	producer := kafka.NewProducer(
 		[]string{os.Getenv("KAFKA_ADDRESS")},
-		"saga",
+		"saga-replies",
 	)
 	defer producer.Close()
 
@@ -57,8 +57,8 @@ func main() {
 
 	consumer := kafka.NewConsumer(
 		[]string{os.Getenv("KAFKA_ADDRESS")},
-		"inventory",
-		"order-service-group",
+		"saga-commands",
+		"inventory-service-group",
 	)
 	defer consumer.Close()
 	go client.ProcessInventoryEvents(consumer, goodInteractor, log)

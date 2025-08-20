@@ -49,7 +49,7 @@ func main() {
 	db.AutoMigrate(&domain.Order{}, &domain.OrderItem{})
 	producer := kafka.NewProducer(
 		[]string{os.Getenv("KAFKA_ADDRESS")},
-		"saga",
+		"saga-replies",
 	)
 	defer producer.Close()
 
@@ -58,7 +58,7 @@ func main() {
 
 	consumer := kafka.NewConsumer(
 		[]string{os.Getenv("KAFKA_ADDRESS")},
-		"order",
+		"saga-replies",
 		"order-service-group",
 	)
 	defer consumer.Close()
