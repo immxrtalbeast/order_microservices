@@ -179,13 +179,14 @@ func (oi *OrderInteractor) SetTotalSum(ctx context.Context, event domain.Reserve
 		slog.String("op", op),
 		slog.String("order_id", event.OrderID.String()),
 		slog.String("saga_id", event.SagaID.String()),
-		slog.Any("products", event.Products),
+		slog.Int("total-sum", event.TotalSum),
 	)
 	log.Info("setting sum")
 	tracer := otel.Tracer("order-service")
 	ctx, span := tracer.Start(ctx, "OrderService.SetTotalSum")
 	span.SetAttributes(
 		attribute.String("saga.id", event.SagaID.String()),
+		attribute.Int("total-sum", event.TotalSum),
 	)
 	defer span.End()
 	if err := oi.orderRepo.SetTotalSum(ctx, event.OrderID, event.TotalSum); err != nil {
