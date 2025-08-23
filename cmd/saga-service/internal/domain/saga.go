@@ -30,6 +30,10 @@ const (
 
 type SagaInteractor interface {
 	StartSaga(ctx context.Context)
+	HandleProductsReserved(ctx context.Context, event ProductsReservedEvent)
+	HandleProductsReservedError(ctx context.Context, event ProductsReservedEvent)
+	HandleCancelOrderCommand(ctx context.Context, command CancelOrderCommand)
+	HandleCompensateOrderCommand(ctx context.Context, command CompensateOrderCommand)
 }
 
 type SagaRepository interface {

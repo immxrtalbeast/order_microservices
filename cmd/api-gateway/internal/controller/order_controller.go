@@ -20,9 +20,8 @@ func NewOrderController(orderService *ordergrpc.Client) *OrderController {
 
 func (c *OrderController) CreateOrder(ctx *gin.Context) {
 	type OrderItem struct {
-		ProductID string  `json:"product_id" binding:"required"`
-		Quantity  int32   `json:"quantity" binding:"required,min=1"`
-		Price     float64 `json:"price" binding:"required,min=0.01"`
+		ProductID string `json:"product_id" binding:"required"`
+		Quantity  int32  `json:"quantity" binding:"required,min=1"`
 	}
 
 	type CreateOrderRequest struct {
@@ -46,7 +45,6 @@ func (c *OrderController) CreateOrder(ctx *gin.Context) {
 		items[i] = &order.OrderItem{
 			ProductId: item.ProductID,
 			Quantity:  item.Quantity,
-			Price:     item.Price,
 		}
 	}
 

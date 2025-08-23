@@ -47,7 +47,6 @@ func (s *serverAPI) CreateOrder(ctx context.Context, in *order.CreateOrderReques
 		domainItems[i] = domain.OrderItem{
 			ProductID: productID,
 			Quantity:  int(item.Quantity),
-			Price:     item.Price,
 		}
 	}
 

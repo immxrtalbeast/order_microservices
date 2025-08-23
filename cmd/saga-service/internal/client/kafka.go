@@ -16,7 +16,7 @@ import (
 )
 
 func ProcessSagaEvents(consumer *mykafka.Consumer, sagaInteractor *saga.SagaInteractor, log *slog.Logger) {
-	log.Info("listening kafka")
+	log.Info("listening kafka for events")
 	propagator := propagation.TraceContext{}
 	for {
 		readCtx, readCancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -94,6 +94,80 @@ func ProcessSagaEvents(consumer *mykafka.Consumer, sagaInteractor *saga.SagaInte
 
 		default:
 			log.Error("unknown event type", "type", eventType)
+		}
+	}
+}
+
+func ProcessSagaCommands(consumer *mykafka.Consumer, sagaInteractor *saga.SagaInteractor, log *slog.Logger) {
+	log.Info("listening kafka for commands")
+	propagator := propagation.TraceContext{}
+	for {
+		readCtx, readCancel := context.WithTimeout(context.Background(), 1*time.Second)
+
+		msg, err := consumer.ReadRawMessage(readCtx)
+		readCancel()
+		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) {
+				continue
+			}
+			log.Error("Unknown error", sl.Err(err))
+			time.Sleep(1 * time.Second)
+			continue
+		}
+		log.Info("EventReceived")
+
+		eventType, err := getHeaderValue(msg.Headers, "Event-Type")
+		if err != nil {
+			log.Error("error while parsing eventType", sl.Err(err), "eventType is", eventType)
+			continue
+		}
+		log.Info("EventType is ", eventType)
+		if eventType == "" {
+			log.Error("missing event type header")
+			continue
+		}
+
+		baseCtx := context.Background()
+		carrier := propagation.MapCarrier{}
+
+		for _, header := range msg.Headers {
+			carrier[header.Key] = string(header.Value)
+		}
+
+		ctx := propagator.Extract(baseCtx, carrier)
+		processCtx, processCancel := context.WithTimeout(ctx, 30*time.Second)
+
+		switch eventType {
+		case "CancelOrderCommand":
+			var command domain.CancelOrderCommand
+			if err := json.Unmarshal(msg.Value, &command); err != nil {
+				log.Error("failed to unmarshal command", "type", eventType, "error", err)
+				continue
+			}
+
+			log.Info("Cancel order command received", "command", command)
+
+			go func() {
+				defer processCancel()
+				sagaInteractor.HandleCancelOrderCommand(processCtx, command)
+			}()
+
+		case "CompensateOrderCommand":
+			var command domain.CompensateOrderCommand
+			if err := json.Unmarshal(msg.Value, &command); err != nil {
+				log.Error("failed to unmarshal command", "type", eventType, "error", err)
+				continue
+			}
+
+			log.Info("Compensate order command received", "command", command)
+
+			go func() {
+				defer processCancel()
+				sagaInteractor.HandleCompensateOrderCommand(processCtx, command)
+			}()
+
+		default:
+			log.Error("unknown command type", "type", eventType)
 		}
 	}
 }

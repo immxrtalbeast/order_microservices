@@ -17,3 +17,13 @@ type CancelOrderCommand struct {
 	OrderID uuid.UUID `json:"order_id"`
 	SagaID  uuid.UUID `json:"saga_id"`
 }
+
+type ReleaseInventoryCommand struct {
+	OrderID uuid.UUID `json:"order_id"`
+	SagaID  uuid.UUID `json:"saga_id"`
+}
+
+type CompensateOrderCommand struct {
+	OrderID uuid.UUID `json:"order_id"`
+	SagaID  uuid.UUID `json:"saga_id"`
+}

@@ -130,7 +130,6 @@ type OrderItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	ProductId     string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
 	Quantity      int32                  `protobuf:"varint,2,opt,name=quantity,proto3" json:"quantity,omitempty"`
-	Price         float64                `protobuf:"fixed64,3,opt,name=price,proto3" json:"price,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -175,13 +174,6 @@ func (x *OrderItem) GetProductId() string {
 func (x *OrderItem) GetQuantity() int32 {
 	if x != nil {
 		return x.Quantity
-	}
-	return 0
-}
-
-func (x *OrderItem) GetPrice() float64 {
-	if x != nil {
-		return x.Price
 	}
 	return 0
 }
@@ -617,12 +609,11 @@ const file_order_order_service_proto_rawDesc = "" +
 	"\x19order/order_service.proto\x12\x05order\x1a\x1fgoogle/protobuf/timestamp.proto\"U\n" +
 	"\x12CreateOrderRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12&\n" +
-	"\x05items\x18\x02 \x03(\v2\x10.order.OrderItemR\x05items\"\\\n" +
+	"\x05items\x18\x02 \x03(\v2\x10.order.OrderItemR\x05items\"F\n" +
 	"\tOrderItem\x12\x1d\n" +
 	"\n" +
 	"product_id\x18\x01 \x01(\tR\tproductId\x12\x1a\n" +
-	"\bquantity\x18\x02 \x01(\x05R\bquantity\x12\x14\n" +
-	"\x05price\x18\x03 \x01(\x01R\x05price\"\\\n" +
+	"\bquantity\x18\x02 \x01(\x05R\bquantity\"\\\n" +
 	"\x13CreateOrderResponse\x12\x19\n" +
 	"\border_id\x18\x01 \x01(\tR\aorderId\x12*\n" +
 	"\x06status\x18\x02 \x01(\x0e2\x12.order.OrderStatusR\x06status\")\n" +

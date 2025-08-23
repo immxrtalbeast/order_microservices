@@ -117,8 +117,7 @@ func (si *SagaInteractor) HandleProductsReservedError(ctx context.Context, event
 		span.RecordError(err)
 		return
 	}
-	saga.CurrentStep = string(domain.StateInventoryReleasing)
-	saga.UpdatedAt = time.Now()
+
 	if err = si.sagaRepo.UpdateSaga(ctx, saga); err != nil {
 		log.Error("Failed to save saga", sl.Err(err))
 		span.RecordError(err)
@@ -134,4 +133,89 @@ func (si *SagaInteractor) HandleProductsReservedError(ctx context.Context, event
 		return
 	}
 	log.Info("Command to cancel order sended!")
+}
+
+func (si *SagaInteractor) HandleCancelOrderCommand(ctx context.Context, command domain.CancelOrderCommand) {
+	const op = "service.saga.HandleCancelOrderCommand"
+	log := si.log.With(
+		slog.String("op", op),
+		slog.String("sagaID", command.SagaID.String()),
+		slog.String("order_id", command.OrderID.String()),
+	)
+	log.Info("handling cancel order command")
+	tracer := otel.Tracer("saga-service")
+	ctx, span := tracer.Start(ctx, "SagaService.HandleCancelOrderCommand")
+	defer span.End()
+
+	saga, err := si.sagaRepo.Saga(ctx, command.SagaID)
+	if err != nil {
+		log.Error("failed to get saga", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+
+	saga.CurrentStep = string(domain.StateCompensated)
+	saga.UpdatedAt = time.Now()
+
+	if err := si.sagaRepo.UpdateSaga(ctx, saga); err != nil {
+		log.Error("failed to update saga", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+
+	releaseCommand := domain.ReleaseInventoryCommand{
+		OrderID: command.OrderID,
+		SagaID:  command.SagaID,
+	}
+
+	if err := si.producer.PublishEventWithEventType(ctx, "ReleaseInventoryCommand", releaseCommand, "ReleaseInventoryCommand"); err != nil {
+		log.Error("failed to publish release command", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+
+	log.Info("cancel order command handled successfully")
+}
+
+func (si *SagaInteractor) HandleCompensateOrderCommand(ctx context.Context, command domain.CompensateOrderCommand) {
+	const op = "saga.HandleCompensateOrderCommand"
+	log := si.log.With(
+		slog.String("op", op),
+		slog.String("orderID", command.OrderID.String()),
+		slog.String("sagaID", command.SagaID.String()),
+	)
+
+	log.Info("handling compensate order command")
+	tracer := otel.Tracer("saga-service")
+	ctx, span := tracer.Start(ctx, "SagaService.HandleCompensateOrderCommand")
+	defer span.End()
+
+	saga, err := si.sagaRepo.Saga(ctx, command.SagaID)
+	if err != nil {
+		log.Error("failed to get saga", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+
+	saga.CurrentStep = string(domain.StateCompensated)
+	saga.UpdatedAt = time.Now()
+
+	if err := si.sagaRepo.UpdateSaga(ctx, saga); err != nil {
+		log.Error("failed to update saga", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+
+	releaseCommand := domain.ReleaseInventoryCommand{
+		OrderID: command.OrderID,
+		SagaID:  command.SagaID,
+	}
+
+	if err := si.producer.PublishEventWithEventType(ctx, "ReleaseInventoryCommand", releaseCommand, "ReleaseInventoryCommand"); err != nil {
+		log.Error("failed to publish release command", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+
+	log.Info("compensate order command handled successfully")
 }

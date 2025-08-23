@@ -28,7 +28,6 @@ type OrderItem struct {
 	OrderID   uuid.UUID `gorm:"type:uuid;not null;index"` // Внешний ключ
 	ProductID uuid.UUID `gorm:"type:uuid;not null"`
 	Quantity  int       `gorm:"not null"`
-	Price     float64   `gorm:"type:decimal(10,2);not null"`
 }
 
 type OrderItemEvent struct {

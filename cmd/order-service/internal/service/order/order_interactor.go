@@ -40,22 +40,18 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 		attribute.Int("goods.listLength", len(items)),
 	)
 	defer span.End()
-	var total float64
-	for _, item := range items {
-		total += item.Price * float64(item.Quantity)
-	}
 
 	order := &domain.Order{
 		ID:     uuid.New(),
 		UserID: userID,
 		Items:  items,
-		Total:  total,
+		Total:  0,
 		Status: "PENDING",
 	}
 
 	log = log.With(slog.String("order_id", order.ID.String()))
 	log.Debug("order details",
-		slog.Float64("total", total),
+		slog.Float64("total", 0),
 	)
 
 	if _, err := oi.orderRepo.SaveOrder(ctx, order); err != nil {
