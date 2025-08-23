@@ -188,5 +188,10 @@ func (oi *OrderInteractor) SetTotalSum(ctx context.Context, event domain.Reserve
 		attribute.String("saga.id", event.SagaID.String()),
 	)
 	defer span.End()
+	if err := oi.orderRepo.SetTotalSum(ctx, event.OrderID, event.TotalSum); err != nil {
+		log.Error("failed to update order sum", sl.Err(err))
+		span.RecordError(err)
+		return fmt.Errorf("%s: %w", op, err)
+	}
 	return nil
 }
