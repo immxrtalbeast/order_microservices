@@ -52,12 +52,8 @@ func (a *GrpcApp) MustRun() {
 	}
 }
 
-// Run runs gRPC server.
 func (a *GrpcApp) Run() error {
 	const op = "grpcapp.Run"
-
-	// Создаём listener, который будет слушить TCP-сообщения, адресованные
-	// Нашему gRPC-серверу
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", a.port))
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -65,7 +61,6 @@ func (a *GrpcApp) Run() error {
 
 	a.log.Info("grpc server started", slog.String("addr", l.Addr().String()))
 
-	// Запускаем обработчик gRPC-сообщений
 	if err := a.gRPCServer.Serve(l); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}

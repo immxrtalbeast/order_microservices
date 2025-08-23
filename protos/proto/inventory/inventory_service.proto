@@ -40,7 +40,8 @@ message ReserveItemsRequest {
 
 message ReserveItemsResponse {
     bool success = 1;
-    int64 reservation_id = 2;  // Уникальный ID резервации
+    // int64 reservation_id = 2;  // Уникальный ID резервации
+    int64 total_order_sum = 2;
 }
 
 message AddGoodRequest {

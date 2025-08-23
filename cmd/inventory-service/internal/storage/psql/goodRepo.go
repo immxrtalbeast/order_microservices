@@ -46,8 +46,10 @@ func (r *GoodRepository) UpdateGood(ctx context.Context, good *domain.Good) erro
 	return result.Error
 }
 
-func (r *GoodRepository) ReserveProducts(ctx context.Context, orderItems []domain.OrderItem) error {
-	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+func (r *GoodRepository) ReserveProducts(ctx context.Context, orderItems []domain.OrderItem) (int, error) {
+	var total int
+
+	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		goodIDs := make([]uuid.UUID, len(orderItems))
 		for i, item := range orderItems {
 			goodIDs[i] = item.GoodID
@@ -60,17 +62,21 @@ func (r *GoodRepository) ReserveProducts(ctx context.Context, orderItems []domai
 			return err
 		}
 
-		goodMap := make(map[uuid.UUID]domain.Good, len(goods))
+		goodMap := make(map[uuid.UUID]domain.Good)
 		for _, good := range goods {
 			goodMap[good.ID] = good
 		}
 
+		total = 0
 		updates := make(map[uuid.UUID]int)
+
 		for _, item := range orderItems {
 			good, exists := goodMap[item.GoodID]
 			if !exists {
 				return errors.New("good not found")
 			}
+
+			total += good.Price * item.Quantity
 
 			newQuantity := good.QuantityInStock - item.Quantity
 			if newQuantity < 0 {
@@ -89,4 +95,10 @@ func (r *GoodRepository) ReserveProducts(ctx context.Context, orderItems []domai
 
 		return nil
 	})
+
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }
