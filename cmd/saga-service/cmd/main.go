@@ -53,14 +53,6 @@ func main() {
 	sagaRepo := psql.NewSagaRepository(db)
 	sagaInteractor := saga.NewSagaInteractor(log, producer, sagaRepo)
 
-	commandConsumer := kafka.NewConsumer(
-		[]string{os.Getenv("KAFKA_ADDRESS")},
-		"saga-command",
-		"saga-service-command-group",
-	)
-	defer commandConsumer.Close()
-	client.ProcessSagaEvents(commandConsumer, sagaInteractor, log)
-
 	repliesConsumer := kafka.NewConsumer(
 		[]string{os.Getenv("KAFKA_ADDRESS")},
 		"saga-replies",
