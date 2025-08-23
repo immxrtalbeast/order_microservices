@@ -86,3 +86,8 @@ func (r *OrderRepository) ListOrdersByUser(ctx context.Context, userID uuid.UUID
 	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Limit(limit).Offset(offset).Find(orders).Error
 	return orders, err
 }
+
+func (r *OrderRepository) SetTotalSum(ctx context.Context, orderID uuid.UUID, sum int) error {
+	result := r.db.WithContext(ctx).Model(&domain.Order{}).Where("id = ?", orderID).Update("total", sum)
+	return result.Error
+}

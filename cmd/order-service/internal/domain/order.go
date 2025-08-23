@@ -42,6 +42,7 @@ type OrderRepository interface {
 	DeleteOrder(ctx context.Context, orderID uuid.UUID) error
 	UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, status string) error
 	ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Order, error)
+	SetTotalSum(ctx context.Context, orderID uuid.UUID, sum int) error
 }
 
 type OrderInteractor interface {
@@ -49,4 +50,5 @@ type OrderInteractor interface {
 	Order(ctx context.Context, orderID uuid.UUID) (Order, error)
 	ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Order, error)
 	DeleteOrder(ctx context.Context, orderID uuid.UUID) error
+	SetTotalSum(ctx context.Context, event ReserveProductsEventReply) error
 }

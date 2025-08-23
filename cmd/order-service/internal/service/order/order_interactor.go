@@ -50,9 +50,7 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 	}
 
 	log = log.With(slog.String("order_id", order.ID.String()))
-	log.Debug("order details",
-		slog.Float64("total", 0),
-	)
+	log.Debug("order details")
 
 	if _, err := oi.orderRepo.SaveOrder(ctx, order); err != nil {
 		log.Error("failed to create order", sl.Err(err))
@@ -172,5 +170,23 @@ func (oi *OrderInteractor) UpdateOrderStatus(ctx context.Context, orderID uuid.U
 		return fmt.Errorf("%s: %w", op, err)
 	}
 	log.Info("order status updated")
+	return nil
+}
+
+func (oi *OrderInteractor) SetTotalSum(ctx context.Context, event domain.ReserveProductsEventReply) error {
+	const op = "service.order.set-total-sum"
+	log := oi.log.With(
+		slog.String("op", op),
+		slog.String("order_id", event.OrderID.String()),
+		slog.String("saga_id", event.SagaID.String()),
+		slog.Any("products", event.Products),
+	)
+	log.Info("setting sum")
+	tracer := otel.Tracer("order-service")
+	ctx, span := tracer.Start(ctx, "OrderService.SetTotalSum")
+	span.SetAttributes(
+		attribute.String("saga.id", event.SagaID.String()),
+	)
+	defer span.End()
 	return nil
 }

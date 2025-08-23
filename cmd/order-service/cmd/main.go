@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"immxrtalbeast/order_microservices/cmd/order-service/grpcapp"
+	"immxrtalbeast/order_microservices/cmd/order-service/internal/client"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/config"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/domain"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib/logger/sl"
@@ -63,7 +64,7 @@ func main() {
 	)
 	defer consumer.Close()
 
-	// go processOrderEvents(consumer, orderInteractor, log)
+	go client.ProcessOrderEvents(consumer, orderInteractor, log)
 	grpcApp := grpcapp.New(log, orderInteractor, cfg.GRPC.Port)
 	grpcApp.MustRun()
 
