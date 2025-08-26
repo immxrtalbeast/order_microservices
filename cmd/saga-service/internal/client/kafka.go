@@ -87,10 +87,8 @@ func ProcessSagaEvents(consumer *mykafka.Consumer, sagaInteractor *saga.SagaInte
 			}()
 
 		case "PaymentProcessedEvent":
-			// ... аналогично
 
 		case "ProductsReservationFailedEvent":
-		// ... обработка события об ошибке
 
 		default:
 			log.Error("unknown event type", "type", eventType)
