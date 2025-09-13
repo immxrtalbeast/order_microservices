@@ -80,6 +80,6 @@ func (c *UserController) Login(ctx *gin.Context) {
 	)
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "loggin success",
+		"message": "login success",
 	})
 }

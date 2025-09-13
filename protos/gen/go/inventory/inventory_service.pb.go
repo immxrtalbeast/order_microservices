@@ -61,11 +61,12 @@ type Product struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name            string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	ImageLink       string                 `protobuf:"bytes,3,opt,name=image_link,json=imageLink,proto3" json:"image_link,omitempty"`
-	Description     string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	Price           float64                `protobuf:"fixed64,5,opt,name=price,proto3" json:"price,omitempty"`
-	Volume          int32                  `protobuf:"varint,6,opt,name=volume,proto3" json:"volume,omitempty"`
-	QuantityInStock int64                  `protobuf:"varint,7,opt,name=quantity_in_stock,json=quantityInStock,proto3" json:"quantity_in_stock,omitempty"`
+	Category        string                 `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
+	ImageLink       string                 `protobuf:"bytes,4,opt,name=image_link,json=imageLink,proto3" json:"image_link,omitempty"`
+	Description     string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Price           float64                `protobuf:"fixed64,6,opt,name=price,proto3" json:"price,omitempty"`
+	Volume          int32                  `protobuf:"varint,7,opt,name=volume,proto3" json:"volume,omitempty"`
+	QuantityInStock int64                  `protobuf:"varint,8,opt,name=quantity_in_stock,json=quantityInStock,proto3" json:"quantity_in_stock,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -110,6 +111,13 @@ func (x *Product) GetId() string {
 func (x *Product) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *Product) GetCategory() string {
+	if x != nil {
+		return x.Category
 	}
 	return ""
 }
@@ -353,11 +361,12 @@ func (x *ReserveItemsResponse) GetTotalOrderSum() int64 {
 type AddGoodRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Name            string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Description     string                 `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	Category        string                 `protobuf:"bytes,2,opt,name=category,proto3" json:"category,omitempty"`
 	ImageLink       string                 `protobuf:"bytes,3,opt,name=image_link,json=imageLink,proto3" json:"image_link,omitempty"`
-	Price           float64                `protobuf:"fixed64,4,opt,name=price,proto3" json:"price,omitempty"`
-	Volume          int32                  `protobuf:"varint,5,opt,name=volume,proto3" json:"volume,omitempty"`
-	QuantityInStock int64                  `protobuf:"varint,6,opt,name=quantity_in_stock,json=quantityInStock,proto3" json:"quantity_in_stock,omitempty"`
+	Description     string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	Price           float64                `protobuf:"fixed64,5,opt,name=price,proto3" json:"price,omitempty"`
+	Volume          int32                  `protobuf:"varint,6,opt,name=volume,proto3" json:"volume,omitempty"`
+	QuantityInStock int64                  `protobuf:"varint,7,opt,name=quantity_in_stock,json=quantityInStock,proto3" json:"quantity_in_stock,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -399,9 +408,9 @@ func (x *AddGoodRequest) GetName() string {
 	return ""
 }
 
-func (x *AddGoodRequest) GetDescription() string {
+func (x *AddGoodRequest) GetCategory() string {
 	if x != nil {
-		return x.Description
+		return x.Category
 	}
 	return ""
 }
@@ -409,6 +418,13 @@ func (x *AddGoodRequest) GetDescription() string {
 func (x *AddGoodRequest) GetImageLink() string {
 	if x != nil {
 		return x.ImageLink
+	}
+	return ""
+}
+
+func (x *AddGoodRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -570,11 +586,12 @@ type UpdateGoodRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name            string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	ImageLink       string                 `protobuf:"bytes,3,opt,name=image_link,json=imageLink,proto3" json:"image_link,omitempty"`
-	Description     string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	Price           float64                `protobuf:"fixed64,5,opt,name=price,proto3" json:"price,omitempty"`
-	Volume          int32                  `protobuf:"varint,6,opt,name=volume,proto3" json:"volume,omitempty"`
-	QuantityInStock int64                  `protobuf:"varint,7,opt,name=quantity_in_stock,json=quantityInStock,proto3" json:"quantity_in_stock,omitempty"`
+	Category        string                 `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
+	ImageLink       string                 `protobuf:"bytes,4,opt,name=image_link,json=imageLink,proto3" json:"image_link,omitempty"`
+	Description     string                 `protobuf:"bytes,5,opt,name=description,proto3" json:"description,omitempty"`
+	Price           float64                `protobuf:"fixed64,6,opt,name=price,proto3" json:"price,omitempty"`
+	Volume          int32                  `protobuf:"varint,7,opt,name=volume,proto3" json:"volume,omitempty"`
+	QuantityInStock int64                  `protobuf:"varint,8,opt,name=quantity_in_stock,json=quantityInStock,proto3" json:"quantity_in_stock,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -619,6 +636,13 @@ func (x *UpdateGoodRequest) GetId() string {
 func (x *UpdateGoodRequest) GetName() string {
 	if x != nil {
 		return x.Name
+	}
+	return ""
+}
+
+func (x *UpdateGoodRequest) GetCategory() string {
+	if x != nil {
+		return x.Category
 	}
 	return ""
 }
@@ -707,16 +731,17 @@ var File_inventory_inventory_service_proto protoreflect.FileDescriptor
 const file_inventory_inventory_service_proto_rawDesc = "" +
 	"\n" +
 	"!inventory/inventory_service.proto\x12\tinventory\"\x15\n" +
-	"\x13ListProductsRequest\"\xc8\x01\n" +
+	"\x13ListProductsRequest\"\xe4\x01\n" +
 	"\aProduct\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
+	"\bcategory\x18\x03 \x01(\tR\bcategory\x12\x1d\n" +
 	"\n" +
-	"image_link\x18\x03 \x01(\tR\timageLink\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x14\n" +
-	"\x05price\x18\x05 \x01(\x01R\x05price\x12\x16\n" +
-	"\x06volume\x18\x06 \x01(\x05R\x06volume\x12*\n" +
-	"\x11quantity_in_stock\x18\a \x01(\x03R\x0fquantityInStock\"F\n" +
+	"image_link\x18\x04 \x01(\tR\timageLink\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x14\n" +
+	"\x05price\x18\x06 \x01(\x01R\x05price\x12\x16\n" +
+	"\x06volume\x18\a \x01(\x05R\x06volume\x12*\n" +
+	"\x11quantity_in_stock\x18\b \x01(\x03R\x0fquantityInStock\"F\n" +
 	"\x14ListProductsResponse\x12.\n" +
 	"\bproducts\x18\x01 \x03(\v2\x12.inventory.ProductR\bproducts\"H\n" +
 	"\vReserveItem\x12\x1d\n" +
@@ -728,30 +753,32 @@ const file_inventory_inventory_service_proto_rawDesc = "" +
 	"\x05items\x18\x02 \x03(\v2\x16.inventory.ReserveItemR\x05items\"X\n" +
 	"\x14ReserveItemsResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12&\n" +
-	"\x0ftotal_order_sum\x18\x02 \x01(\x03R\rtotalOrderSum\"\xbf\x01\n" +
+	"\x0ftotal_order_sum\x18\x02 \x01(\x03R\rtotalOrderSum\"\xdb\x01\n" +
 	"\x0eAddGoodRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x02 \x01(\tR\vdescription\x12\x1d\n" +
-	"\n" +
-	"image_link\x18\x03 \x01(\tR\timageLink\x12\x14\n" +
-	"\x05price\x18\x04 \x01(\x01R\x05price\x12\x16\n" +
-	"\x06volume\x18\x05 \x01(\x05R\x06volume\x12*\n" +
-	"\x11quantity_in_stock\x18\x06 \x01(\x03R\x0fquantityInStock\"+\n" +
-	"\x0fAddGoodResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\",\n" +
-	"\x11DeleteGoodRequest\x12\x17\n" +
-	"\agood_id\x18\x01 \x01(\tR\x06goodId\".\n" +
-	"\x12DeleteGoodResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xd2\x01\n" +
-	"\x11UpdateGoodRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1d\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1a\n" +
+	"\bcategory\x18\x02 \x01(\tR\bcategory\x12\x1d\n" +
 	"\n" +
 	"image_link\x18\x03 \x01(\tR\timageLink\x12 \n" +
 	"\vdescription\x18\x04 \x01(\tR\vdescription\x12\x14\n" +
 	"\x05price\x18\x05 \x01(\x01R\x05price\x12\x16\n" +
 	"\x06volume\x18\x06 \x01(\x05R\x06volume\x12*\n" +
-	"\x11quantity_in_stock\x18\a \x01(\x03R\x0fquantityInStock\".\n" +
+	"\x11quantity_in_stock\x18\a \x01(\x03R\x0fquantityInStock\"+\n" +
+	"\x0fAddGoodResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\",\n" +
+	"\x11DeleteGoodRequest\x12\x17\n" +
+	"\agood_id\x18\x01 \x01(\tR\x06goodId\".\n" +
+	"\x12DeleteGoodResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\xee\x01\n" +
+	"\x11UpdateGoodRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x1a\n" +
+	"\bcategory\x18\x03 \x01(\tR\bcategory\x12\x1d\n" +
+	"\n" +
+	"image_link\x18\x04 \x01(\tR\timageLink\x12 \n" +
+	"\vdescription\x18\x05 \x01(\tR\vdescription\x12\x14\n" +
+	"\x05price\x18\x06 \x01(\x01R\x05price\x12\x16\n" +
+	"\x06volume\x18\a \x01(\x05R\x06volume\x12*\n" +
+	"\x11quantity_in_stock\x18\b \x01(\x03R\x0fquantityInStock\".\n" +
 	"\x12UpdateGoodResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess2\x85\x03\n" +
 	"\tInventory\x12O\n" +

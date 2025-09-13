@@ -49,11 +49,12 @@ func New(ctx context.Context, addr string, timeout time.Duration, retriesCount i
 	}, nil
 }
 
-func (c *Client) AddGood(ctx context.Context, name string, description string, imageLink string, price int, quantityInStock int) error {
+func (c *Client) AddGood(ctx context.Context, name, category, description, imageLink string, price, quantityInStock int) error {
 	const op = "grpc.AddGood"
 
 	_, err := c.api.AddGood(ctx, &inventory.AddGoodRequest{
 		Name:            name,
+		Category:        category,
 		Description:     description,
 		ImageLink:       imageLink,
 		Price:           float64(price),
@@ -87,12 +88,13 @@ func (c *Client) DeleteGood(ctx context.Context, goodID uuid.UUID) error {
 	return nil
 }
 
-func (c *Client) UpdateGood(ctx context.Context, goodID uuid.UUID, name string, description string, imageLink string, price int, quantityInStock int) error {
+func (c *Client) UpdateGood(ctx context.Context, goodID uuid.UUID, name, category, description, imageLink string, price, quantityInStock int) error {
 	const op = "grpc.UpdateGood"
 
 	_, err := c.api.UpdateGood(ctx, &inventory.UpdateGoodRequest{
 		Id:              goodID.String(),
 		Name:            name,
+		Category:        category,
 		Description:     description,
 		ImageLink:       imageLink,
 		Price:           float64(price),

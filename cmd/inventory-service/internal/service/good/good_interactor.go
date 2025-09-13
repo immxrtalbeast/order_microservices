@@ -23,24 +23,27 @@ func NewGoodInteractor(goodRepo domain.GoodRepository, log *slog.Logger, produce
 	return &GoodInteractor{goodRepo: goodRepo, log: log, producer: producer}
 }
 
-func (gi *GoodInteractor) AddGood(ctx context.Context, name string, description string, imageLink string, price int, volume int, quantityInStock int) error {
+func (gi *GoodInteractor) AddGood(ctx context.Context, name, category, description, imageLink string, price, volume, quantityInStock int) error {
 	const op = "service.good.save"
 	log := gi.log.With(
 		slog.String("op", op),
 		slog.String("good", name),
 		slog.Int("volume", volume),
+		slog.String("category", category),
 	)
 	tracer := otel.Tracer("inventory-service")
 	ctx, span := tracer.Start(ctx, "InvetoryService.AddGood")
 	span.SetAttributes(
 		attribute.String("good.name", name),
 		attribute.Int("good.volume", volume),
+		attribute.String("good.category", category),
 	)
 	defer span.End()
 	log.Info("adding good")
 	good := &domain.Good{
 		Name:            name,
 		Description:     description,
+		Category:        category,
 		ImageLink:       imageLink,
 		Price:           price,
 		Volume:          volume,
@@ -97,12 +100,13 @@ func (gi *GoodInteractor) DeleteGood(ctx context.Context, goodID uuid.UUID) erro
 	return nil
 }
 
-func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name string, description string, imageLink string, price int, volume int, quantityInStock int) error {
+func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name, category, description, imageLink string, price, volume, quantityInStock int) error {
 	const op = "service.good.update"
 	log := gi.log.With(
 		slog.String("op", op),
 		slog.String("goodID", goodID.String()),
 		slog.String("name", name),
+		slog.String("category", category),
 		slog.String("description", description),
 		slog.String("imageLink", imageLink),
 		slog.Int("price", price),
@@ -119,6 +123,7 @@ func (gi *GoodInteractor) UpdateGood(ctx context.Context, goodID uuid.UUID, name
 	good := &domain.Good{
 		ID:              goodID,
 		Name:            name,
+		Category:        category,
 		Description:     description,
 		ImageLink:       imageLink,
 		Price:           price,

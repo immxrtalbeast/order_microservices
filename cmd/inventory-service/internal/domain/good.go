@@ -9,6 +9,7 @@ import (
 type Good struct {
 	ID              uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Name            string    `gorm:"not null"`
+	Category        string    `gorm:"not null"`
 	ImageLink       string
 	Description     string
 	Price           int `gorm:"not null"`
@@ -42,9 +43,9 @@ type GoodRepository interface {
 }
 
 type InventoryInteractor interface {
-	AddGood(ctx context.Context, name string, description string, imageLink string, price int, volume int, quantityInStock int) error
+	AddGood(ctx context.Context, name, category, description, imageLink string, price, volume, quantityInStock int) error
 	ListProducts(ctx context.Context) ([]*Good, error)
 	DeleteGood(ctx context.Context, goodID uuid.UUID) error
-	UpdateGood(ctx context.Context, goodID uuid.UUID, name string, description string, imageLink string, price int, volume int, quantityInStock int) error
+	UpdateGood(ctx context.Context, goodID uuid.UUID, name, category, description, imageLink string, price, volume, quantityInStock int) error
 	ReserveProducts(ctx context.Context, event ReserveProductsEvent)
 }

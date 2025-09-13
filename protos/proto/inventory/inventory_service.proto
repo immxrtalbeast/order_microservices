@@ -17,11 +17,12 @@ message ListProductsRequest{}
 message Product {
     string id = 1;
     string name = 2;
-    string image_link = 3;
-    string description = 4;
-    double price = 5;
-    int32 volume = 6;
-    int64 quantity_in_stock = 7;
+    string category = 3;
+    string image_link = 4;
+    string description = 5;
+    double price = 6;
+    int32 volume = 7;
+    int64 quantity_in_stock = 8;
 }
 
 message ListProductsResponse {
@@ -46,11 +47,12 @@ message ReserveItemsResponse {
 
 message AddGoodRequest {
     string name = 1;
-    string description = 2;
+    string category = 2;
     string image_link = 3;
-    double price = 4;
-    int32 volume = 5;
-    int64 quantity_in_stock = 6;
+    string description = 4;
+    double price = 5;
+    int32 volume = 6;
+    int64 quantity_in_stock = 7;
 }
 
 message AddGoodResponse{
@@ -68,11 +70,12 @@ message DeleteGoodResponse{
 message UpdateGoodRequest{
     string id = 1;
     string name = 2;
-    string image_link = 3;
-    string description = 4;
-    double price = 5;
-    int32 volume = 6;
-    int64 quantity_in_stock = 7;
+    string category = 3;
+    string image_link = 4;
+    string description = 5;
+    double price = 6;
+    int32 volume = 7;
+    int64 quantity_in_stock = 8;
 }
 
 message UpdateGoodResponse{

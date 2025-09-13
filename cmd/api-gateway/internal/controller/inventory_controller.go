@@ -19,6 +19,7 @@ func NewInventoryController(inventoryService *inventorygrpc.Client) *InventoryCo
 func (c *InventoryController) AddGood(ctx *gin.Context) {
 	type AddGoodRequest struct {
 		Name            string `json:"name" binding:"required"`
+		Category        string `json:"category" binding:"required"`
 		Description     string `json:"description"`
 		Price           int    `json:"price" binding:"required"`
 		ImageLink       string `json:"image_link"`
@@ -33,7 +34,7 @@ func (c *InventoryController) AddGood(ctx *gin.Context) {
 		})
 		return
 	}
-	if err := c.inventoryService.AddGood(ctx, req.Name, req.Description, req.ImageLink, req.Price, req.QuantityInStock); err != nil {
+	if err := c.inventoryService.AddGood(ctx, req.Name, req.Category, req.Description, req.ImageLink, req.Price, req.QuantityInStock); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error":   "failed to add good",
 			"details": err.Error(),
@@ -76,6 +77,7 @@ func (c *InventoryController) UpdateGood(ctx *gin.Context) {
 	type UpdateGoodRequest struct {
 		ID              string `json:"id" binding:"required"`
 		Name            string `json:"name" binding:"required"`
+		Category        string `json:"category" binding:"required"`
 		Description     string `json:"description"`
 		Price           int    `json:"price" binding:"required"`
 		ImageLink       string `json:"image_link"`
@@ -89,7 +91,7 @@ func (c *InventoryController) UpdateGood(ctx *gin.Context) {
 		})
 		return
 	}
-	if err := c.inventoryService.UpdateGood(ctx, uuid.MustParse(req.ID), req.Name, req.Description, req.ImageLink, req.Price, req.QuantityInStock); err != nil {
+	if err := c.inventoryService.UpdateGood(ctx, uuid.MustParse(req.ID), req.Name, req.Category, req.Description, req.ImageLink, req.Price, req.QuantityInStock); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error":   "failed to update good",
 			"details": err.Error(),

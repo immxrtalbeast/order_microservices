@@ -11,6 +11,7 @@ func ConvertGoodToProduct(dbGoods []*domain.Good) []*inventory.Product {
 		pbProduct := &inventory.Product{
 			Id:              g.ID.String(),
 			Name:            g.Name,
+			Category:        g.Category,
 			ImageLink:       g.ImageLink,
 			Description:     g.Description,
 			Price:           float64(g.Price),

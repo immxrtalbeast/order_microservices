@@ -25,6 +25,9 @@ func (s *serverAPI) AddGood(ctx context.Context, in *inventory.AddGoodRequest) (
 	if in.Name == "" {
 		return nil, status.Error(codes.InvalidArgument, "name is required")
 	}
+	if in.Category == "" {
+		return nil, status.Error(codes.InvalidArgument, "category is required")
+	}
 	if in.Price == 0 || in.Price < 0 {
 		return nil, status.Error(codes.InvalidArgument, "price should be greater than 0")
 	}
@@ -32,7 +35,7 @@ func (s *serverAPI) AddGood(ctx context.Context, in *inventory.AddGoodRequest) (
 		return nil, status.Error(codes.InvalidArgument, "quantity should be equal/greater than 0")
 	}
 
-	if err := s.inventoryInteractor.AddGood(ctx, in.Name, in.Description, in.ImageLink, int(in.Price), int(in.Volume), int(in.QuantityInStock)); err != nil {
+	if err := s.inventoryInteractor.AddGood(ctx, in.Name, in.Category, in.Description, in.ImageLink, int(in.Price), int(in.Volume), int(in.QuantityInStock)); err != nil {
 		return nil, status.Error(codes.Internal, "failed to save good")
 	}
 	return &inventory.AddGoodResponse{Success: true}, nil
@@ -67,7 +70,7 @@ func (s *serverAPI) UpdateGood(ctx context.Context, in *inventory.UpdateGoodRequ
 	if in.QuantityInStock < 0 {
 		return nil, status.Error(codes.InvalidArgument, "quantity should be equal/greater than 0")
 	}
-	if err := s.inventoryInteractor.UpdateGood(ctx, good_id, in.Name, in.Description, in.ImageLink, int(in.Price), int(in.Volume), int(in.QuantityInStock)); err != nil {
+	if err := s.inventoryInteractor.UpdateGood(ctx, good_id, in.Name, in.Category, in.Description, in.ImageLink, int(in.Price), int(in.Volume), int(in.QuantityInStock)); err != nil {
 		return nil, status.Error(codes.InvalidArgument, "failed to update good")
 	}
 	return &inventory.UpdateGoodResponse{Success: true}, nil
