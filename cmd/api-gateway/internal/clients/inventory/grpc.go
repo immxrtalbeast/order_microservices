@@ -50,7 +50,7 @@ func New(ctx context.Context, addr string, timeout time.Duration, retriesCount i
 	}, nil
 }
 
-func (c *Client) AddGood(ctx context.Context, name, category, description, imageLink string, price, quantityInStock int) error {
+func (c *Client) AddGood(ctx context.Context, name, category, description, imageLink string, price, quantityInStock int, volume int32) error {
 	const op = "grpc.AddGood"
 
 	_, err := c.api.AddGood(ctx, &inventory.AddGoodRequest{
@@ -59,6 +59,7 @@ func (c *Client) AddGood(ctx context.Context, name, category, description, image
 		Description:     description,
 		ImageLink:       imageLink,
 		Price:           float64(price),
+		Volume:          volume,
 		QuantityInStock: int64(quantityInStock),
 	})
 	if err != nil {

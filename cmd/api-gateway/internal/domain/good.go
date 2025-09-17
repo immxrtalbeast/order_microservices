@@ -10,5 +10,6 @@ type Good struct {
 	ImageLink       string
 	Description     string
 	Price           int `gorm:"not null"`
+	Volume          int
 	QuantityInStock int
 }

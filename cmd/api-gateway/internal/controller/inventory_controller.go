@@ -25,6 +25,7 @@ func (c *InventoryController) AddGood(ctx *gin.Context) {
 		Name            string `form:"name" binding:"required"`
 		Category        string `form:"category" binding:"required"`
 		Description     string `form:"description"`
+		Volume          int    `form:"volume" binding:"required"`
 		Price           int    `form:"price" binding:"required"`
 		QuantityInStock int    `form:"quantity_in_stock"`
 	}
@@ -68,7 +69,7 @@ func (c *InventoryController) AddGood(ctx *gin.Context) {
 		return
 	}
 
-	if err := c.inventoryService.AddGood(ctx, req.Name, req.Category, req.Description, publicURL, req.Price, req.QuantityInStock); err != nil {
+	if err := c.inventoryService.AddGood(ctx, req.Name, req.Category, req.Description, publicURL, req.Price, req.QuantityInStock, int32(req.Volume)); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error":   "failed to add good",
 			"details": err.Error(),
