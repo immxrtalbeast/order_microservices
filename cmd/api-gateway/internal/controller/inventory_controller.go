@@ -1,8 +1,11 @@
 package controller
 
 import (
+	"fmt"
 	inventorygrpc "immxrtalbeast/order_microservices/api-gateway/internal/clients/inventory"
+	"immxrtalbeast/order_microservices/api-gateway/internal/lib"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -17,24 +20,55 @@ func NewInventoryController(inventoryService *inventorygrpc.Client) *InventoryCo
 }
 
 func (c *InventoryController) AddGood(ctx *gin.Context) {
+
 	type AddGoodRequest struct {
-		Name            string `json:"name" binding:"required"`
-		Category        string `json:"category" binding:"required"`
-		Description     string `json:"description"`
-		Price           int    `json:"price" binding:"required"`
-		ImageLink       string `json:"image_link"`
-		QuantityInStock int    `json:"quantity_in_stock"`
+		Name            string `form:"name" binding:"required"`
+		Category        string `form:"category" binding:"required"`
+		Description     string `form:"description"`
+		Price           int    `form:"price" binding:"required"`
+		QuantityInStock int    `form:"quantity_in_stock"`
 	}
 
 	var req AddGoodRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBind(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error":   "invalid request body",
 			"details": err.Error(),
 		})
 		return
 	}
-	if err := c.inventoryService.AddGood(ctx, req.Name, req.Category, req.Description, req.ImageLink, req.Price, req.QuantityInStock); err != nil {
+	file, err := ctx.FormFile("image")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error":   "No file uploaded",
+			"details": err.Error()})
+		return
+	}
+	contentType := file.Header.Get("Content-Type")
+	allowedTypes := map[string]bool{
+		"image/jpeg":    true,
+		"image/jpg":     true,
+		"image/png":     true,
+		"image/webp":    true,
+		"image/svg+xml": true,
+	}
+	if !allowedTypes[contentType] {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file type"})
+		return
+	}
+	tempPath := fmt.Sprintf("/tmp/%s", file.Filename)
+	if err := ctx.SaveUploadedFile(file, tempPath); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file", "details": err.Error()})
+		return
+	}
+	defer os.Remove(tempPath)
+	publicURL, err := lib.UploadToSupabase(tempPath, file.Filename, contentType)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upload to storage", "details": err.Error()})
+		return
+	}
+
+	if err := c.inventoryService.AddGood(ctx, req.Name, req.Category, req.Description, publicURL, req.Price, req.QuantityInStock); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"error":   "failed to add good",
 			"details": err.Error(),

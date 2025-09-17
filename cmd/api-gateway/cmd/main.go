@@ -14,6 +14,7 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -74,6 +75,21 @@ func main() {
 	orderController := controller.NewOrderController(orderClient)
 
 	router := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{
+		"http://localhost:3000",
+	}
+	config.AllowCredentials = true
+	config.AllowHeaders = []string{
+		"Authorization",
+		"Content-Type",
+		"Origin",
+		"Accept",
+	}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+	config.ExposeHeaders = []string{"Set-Cookie"}
+	router.Use(cors.New(config))
 	router.Use(otelgin.Middleware("api-gateway"))
 	api := router.Group("/api/v1")
 	{
