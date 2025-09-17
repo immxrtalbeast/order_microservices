@@ -3,9 +3,10 @@ package auth
 import (
 	"context"
 	"fmt"
-	ssov2 "immxrtalbeast/order_microservices/protos/gen/go/auth"
 	"net"
 	"time"
+
+	ssov2 "github.com/immxrtalbeast/order_protos/gen/go/auth"
 
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 

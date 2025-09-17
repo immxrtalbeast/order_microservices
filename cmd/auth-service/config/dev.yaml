@@ -1,6 +1,6 @@
-env: "local"
+env: "dev"
 jaeger:
-  address: localhost:14268
+  address: jaeger:14268
 grpc:
   port: 44044
   timeout: 5s

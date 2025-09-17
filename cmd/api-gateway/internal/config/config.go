@@ -23,7 +23,8 @@ type Client struct {
 type ClientsConfig struct {
 	Auth      Client `yaml:"auth"`
 	Inventory Client `yaml:"inventory"`
-	Order     Client `yaml:order"`
+	Order     Client `yaml:"order"`
+	Jaeger    Client `yaml:"jaeger"`
 }
 
 func MustLoad() *Config {

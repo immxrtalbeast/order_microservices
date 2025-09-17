@@ -4,7 +4,8 @@ import (
 	"context"
 	"immxrtalbeast/order_microservices/inventory-service/internal/domain"
 	"immxrtalbeast/order_microservices/inventory-service/internal/lib"
-	inventory "immxrtalbeast/order_microservices/protos/gen/go/inventory"
+
+	inventory "github.com/immxrtalbeast/order_protos/gen/go/inventory"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"

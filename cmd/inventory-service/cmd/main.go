@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"immxrtalbeast/order_microservices/internal/pkg/kafka"
-	"immxrtalbeast/order_microservices/internal/pkg/tracing"
 	"immxrtalbeast/order_microservices/inventory-service/grpcapp"
 	"immxrtalbeast/order_microservices/inventory-service/internal/client"
 	"immxrtalbeast/order_microservices/inventory-service/internal/config"
@@ -12,8 +10,11 @@ import (
 	"immxrtalbeast/order_microservices/inventory-service/internal/lib/logger/slogpretty"
 	"immxrtalbeast/order_microservices/inventory-service/internal/service/good"
 	"immxrtalbeast/order_microservices/inventory-service/internal/storage/psql"
+	"immxrtalbeast/order_microservices/inventory-service/internal/tracing"
 	"log/slog"
 	"os"
+
+	kafka "github.com/immxrtalbeast/order_kafka"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -28,7 +29,7 @@ func main() {
 		panic(err)
 	}
 
-	tracer, err := tracing.InitTracer("inventory-service")
+	tracer, err := tracing.InitTracer("inventory-service", cfg.Jaeger.Address)
 	if err != nil {
 		panic(err)
 	}

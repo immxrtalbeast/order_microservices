@@ -8,7 +8,7 @@ import (
 	"immxrtalbeast/order_microservices/api-gateway/internal/config"
 	"immxrtalbeast/order_microservices/api-gateway/internal/controller"
 	"immxrtalbeast/order_microservices/api-gateway/internal/middleware"
-	"immxrtalbeast/order_microservices/internal/pkg/tracing"
+	"immxrtalbeast/order_microservices/api-gateway/internal/tracing"
 	"log/slog"
 	"os"
 
@@ -23,7 +23,7 @@ func main() {
 
 	log := setupLogger()
 
-	tracer, err := tracing.InitTracer("api-gateway")
+	tracer, err := tracing.InitTracer("api-gateway", cfg.Clients.Jaeger.Address)
 	if err != nil {
 		panic(err)
 	}

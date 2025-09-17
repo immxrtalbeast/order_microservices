@@ -3,9 +3,10 @@ package auth
 import (
 	"context"
 	"fmt"
-	inventory "immxrtalbeast/order_microservices/protos/gen/go/inventory"
 	"net"
 	"time"
+
+	inventory "github.com/immxrtalbeast/order_protos/gen/go/inventory"
 
 	"github.com/google/uuid"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"

@@ -9,10 +9,13 @@ import (
 )
 
 type Config struct {
-	Env  string     `yaml:"env" env-default:"local"`
-	GRPC GRPCConfig `yaml:"grpc"`
+	Env    string     `yaml:"env" env-default:"local"`
+	Jaeger Client     `yaml:"jaeger"`
+	GRPC   GRPCConfig `yaml:"grpc"`
 }
-
+type Client struct {
+	Address string `yaml:"address"`
+}
 type GRPCConfig struct {
 	Port    int           `yaml:"port"`
 	Timeout time.Duration `yaml:"timeout"`

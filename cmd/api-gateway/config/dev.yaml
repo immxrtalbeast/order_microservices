@@ -1,16 +1,16 @@
-env: "local"
+env: "dev"
 clients:
   auth:
-      address: localhost:44044
+      address: auth-service:44044
       timeout: 5s
       retriesCount: 10
   inventory:
-      address: localhost:44045
+      address: inventory-service:44045
       timeout: 5s
       retriesCount: 10
   order:
-       address : localhost:44046
+       address : order-service:44046
        timeout: 5s
        retriesCount: 10
   jaeger:
-       address: localhost:14268
+       address: jaeger:14268

@@ -3,10 +3,11 @@ package good
 import (
 	"context"
 	"fmt"
-	"immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"immxrtalbeast/order_microservices/inventory-service/internal/domain"
 	"immxrtalbeast/order_microservices/inventory-service/internal/lib/logger/sl"
 	"log/slog"
+
+	kafka "github.com/immxrtalbeast/order_kafka"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"

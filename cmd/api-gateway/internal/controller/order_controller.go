@@ -2,9 +2,10 @@ package controller
 
 import (
 	ordergrpc "immxrtalbeast/order_microservices/api-gateway/internal/clients/order"
-	order "immxrtalbeast/order_microservices/protos/gen/go/order"
 	"net/http"
 	"strconv"
+
+	order "github.com/immxrtalbeast/order_protos/gen/go/order"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

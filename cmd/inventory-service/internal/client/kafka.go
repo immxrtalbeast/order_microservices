@@ -3,12 +3,13 @@ package client
 import (
 	"context"
 	"encoding/json"
-	mykafka "immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"immxrtalbeast/order_microservices/inventory-service/internal/domain"
 	"immxrtalbeast/order_microservices/inventory-service/internal/lib/logger/sl"
 	"immxrtalbeast/order_microservices/inventory-service/internal/service/good"
 	"log/slog"
 	"time"
+
+	mykafka "github.com/immxrtalbeast/order_kafka"
 
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel/propagation"

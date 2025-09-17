@@ -6,7 +6,7 @@ import (
 	"immxrtalbeast/order_microservices/auth-service/internal/app"
 	"immxrtalbeast/order_microservices/auth-service/internal/config"
 	"immxrtalbeast/order_microservices/auth-service/internal/lib/logger/slogpretty"
-	"immxrtalbeast/order_microservices/internal/pkg/tracing"
+	"immxrtalbeast/order_microservices/auth-service/internal/tracing"
 	"log/slog"
 	"os"
 
@@ -20,7 +20,7 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		panic(err)
 	}
-	tracer, err := tracing.InitTracer("auth-service")
+	tracer, err := tracing.InitTracer("auth-service", cfg.Jaeger.Address)
 	if err != nil {
 		panic(err)
 	}

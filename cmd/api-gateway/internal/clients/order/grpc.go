@@ -3,9 +3,10 @@ package order
 import (
 	"context"
 	"fmt"
-	order "immxrtalbeast/order_microservices/protos/gen/go/order"
 	"net"
 	"time"
+
+	order "github.com/immxrtalbeast/order_protos/gen/go/order"
 
 	"github.com/google/uuid"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"

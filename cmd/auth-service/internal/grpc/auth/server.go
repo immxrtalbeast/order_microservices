@@ -6,7 +6,7 @@ import (
 	"immxrtalbeast/order_microservices/auth-service/internal/services/auth"
 	"immxrtalbeast/order_microservices/auth-service/internal/storage/psql"
 
-	ssov2 "immxrtalbeast/order_microservices/protos/gen/go/auth"
+	ssov2 "github.com/immxrtalbeast/order_protos/gen/go/auth"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
