@@ -4,13 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	mykafka "immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"immxrtalbeast/order_microservices/saga-service/internal/domain"
 	"immxrtalbeast/order_microservices/saga-service/internal/lib/logger/sl"
 	"immxrtalbeast/order_microservices/saga-service/internal/service/saga"
 	"log/slog"
 	"time"
 
+	mykafka "github.com/immxrtalbeast/order_kafka"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel/propagation"
 )
@@ -37,7 +37,7 @@ func ProcessSagaEvents(consumer *mykafka.Consumer, sagaInteractor *saga.SagaInte
 			log.Error("error while parsing eventType", sl.Err(err), "eventType is", eventType)
 			continue
 		}
-		log.Info("EventType is ", eventType)
+		log.Info("event type received", slog.String("event_type", eventType))
 		if eventType == "" {
 			log.Error("missing event type header")
 			continue
@@ -119,7 +119,7 @@ func ProcessSagaCommands(consumer *mykafka.Consumer, sagaInteractor *saga.SagaIn
 			log.Error("error while parsing eventType", sl.Err(err), "eventType is", eventType)
 			continue
 		}
-		log.Info("EventType is ", eventType)
+		log.Info("event type received", slog.String("event_type", eventType))
 		if eventType == "" {
 			log.Error("missing event type header")
 			continue
