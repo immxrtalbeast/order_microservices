@@ -83,7 +83,23 @@ func (r *OrderRepository) UpdateOrderStatus(ctx context.Context, orderID uuid.UU
 
 func (r *OrderRepository) ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]domain.Order, error) {
 	var orders []domain.Order
-	err := r.db.WithContext(ctx).Where("user_id = ?", userID).Limit(limit).Offset(offset).Find(orders).Error
+	err := r.db.WithContext(ctx).
+		Preload("Items").
+		Where("user_id = ?", userID).
+		Limit(limit).
+		Offset(offset).
+		Find(&orders).Error
+	return orders, err
+}
+
+func (r *OrderRepository) ListOrders(ctx context.Context, limit, offset int) ([]domain.Order, error) {
+	var orders []domain.Order
+	err := r.db.WithContext(ctx).
+		Preload("Items").
+		Order("created_at DESC").
+		Limit(limit).
+		Offset(offset).
+		Find(&orders).Error
 	return orders, err
 }
 
