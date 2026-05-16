@@ -3,8 +3,8 @@ package auth
 import (
 	"context"
 	"errors"
+	"immxrtalbeast/order_microservices/auth-service/internal/domain"
 	"immxrtalbeast/order_microservices/auth-service/internal/services/auth"
-	"immxrtalbeast/order_microservices/auth-service/internal/storage/psql"
 
 	ssov2 "github.com/immxrtalbeast/order_protos/gen/go/auth"
 
@@ -30,6 +30,7 @@ type Auth interface {
 		email string,
 		password string,
 	) (userID uuid.UUID, err error)
+	IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error)
 }
 
 func Register(gRPCServer *grpc.Server, auth Auth) {
@@ -68,7 +69,7 @@ func (s *serverAPI) Register(ctx context.Context, in *ssov2.RegisterRequest) (*s
 
 	uid, err := s.auth.RegisterNewUser(ctx, in.GetEmail(), in.GetPassword())
 	if err != nil {
-		if errors.Is(err, psql.ErrUserExists) {
+		if errors.Is(err, domain.ErrUserExists) {
 			return nil, status.Error(codes.AlreadyExists, "user already exists")
 		}
 
@@ -76,4 +77,25 @@ func (s *serverAPI) Register(ctx context.Context, in *ssov2.RegisterRequest) (*s
 	}
 
 	return &ssov2.RegisterResponse{UserId: uid.String()}, nil
+}
+
+func (s *serverAPI) IsAdmin(ctx context.Context, in *ssov2.IsAdminRequest) (*ssov2.IsAdminResponse, error) {
+	if in.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "user ID is required")
+	}
+
+	userID, err := uuid.Parse(in.GetUserId())
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, "invalid user ID format")
+	}
+
+	isAdmin, err := s.auth.IsAdmin(ctx, userID)
+	if err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) {
+			return nil, status.Error(codes.NotFound, "user not found")
+		}
+		return nil, status.Error(codes.Internal, "failed to check admin role")
+	}
+
+	return &ssov2.IsAdminResponse{IsAdmin: isAdmin}, nil
 }
