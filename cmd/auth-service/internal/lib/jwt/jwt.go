@@ -13,6 +13,7 @@ func NewToken(user *domain.User, duration time.Duration, secret string) (string,
 	claims := token.Claims.(jwt.MapClaims)
 	claims["uid"] = user.ID
 	claims["email"] = user.Email
+	claims["is_admin"] = user.IsAdmin
 	claims["exp"] = time.Now().Add(duration).Unix()
 
 	tokenString, err := token.SignedString([]byte(secret))
