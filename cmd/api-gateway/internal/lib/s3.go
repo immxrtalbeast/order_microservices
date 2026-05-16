@@ -16,22 +16,31 @@ import (
 )
 
 func UploadToSupabase(tempPath, fileName, contentType string) (string, error) {
+	accessKeyID := firstNonEmpty(os.Getenv("SUPABASE_S3_ACCESS_KEY_ID"), os.Getenv("SUPABASE_ANON_KEY"))
+	secretAccessKey := firstNonEmpty(os.Getenv("SUPABASE_S3_SECRET_ACCESS_KEY"), os.Getenv("SUPABASE_SECRET_KEY"))
+	endpoint := strings.TrimSpace(os.Getenv("SUPABASE_STORAGE_ENDPOINT"))
+	bucket := strings.TrimSpace(os.Getenv("SUPABASE_BUCKET_NAME"))
+	region := firstNonEmpty(os.Getenv("SUPABASE_S3_REGION"), os.Getenv("SUPABASE_REGION"), "eu-north-1")
+	if accessKeyID == "" || secretAccessKey == "" || endpoint == "" || bucket == "" {
+		return "", fmt.Errorf("missing Supabase S3 configuration")
+	}
+
 	credsProvider := credentials.NewStaticCredentialsProvider(
-		os.Getenv("SUPABASE_ANON_KEY"),
-		os.Getenv("SUPABASE_SECRET_KEY"),
+		accessKeyID,
+		secretAccessKey,
 		"",
 	)
 
 	cfg, err := config.LoadDefaultConfig(context.Background(),
 		config.WithCredentialsProvider(credsProvider),
-		config.WithRegion("eu-north-1"),
+		config.WithRegion(region),
 	)
 	if err != nil {
 		return "", fmt.Errorf("unable to load SDK config: %w", err)
 	}
 
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.BaseEndpoint = aws.String(os.Getenv("SUPABASE_STORAGE_ENDPOINT"))
+		o.BaseEndpoint = aws.String(endpoint)
 		o.UsePathStyle = true
 	})
 
@@ -47,7 +56,7 @@ func UploadToSupabase(tempPath, fileName, contentType string) (string, error) {
 	hashedString := hex.EncodeToString(hash[:])
 
 	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
-		Bucket:      aws.String(os.Getenv("SUPABASE_BUCKET_NAME")),
+		Bucket:      aws.String(bucket),
 		Key:         aws.String(hashedString),
 		Body:        file,
 		ContentType: aws.String(contentType),
@@ -57,10 +66,19 @@ func UploadToSupabase(tempPath, fileName, contentType string) (string, error) {
 	}
 
 	publicURL := fmt.Sprintf("%s/object/public/%s/%s",
-		strings.TrimSuffix(os.Getenv("SUPABASE_STORAGE_ENDPOINT"), "/s3"),
-		os.Getenv("SUPABASE_BUCKET_NAME"),
+		strings.TrimSuffix(endpoint, "/s3"),
+		bucket,
 		hashedString,
 	)
 
 	return publicURL, nil
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return strings.TrimSpace(value)
+		}
+	}
+	return ""
 }
