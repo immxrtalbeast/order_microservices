@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type UserController struct {
@@ -68,6 +69,14 @@ func (c *UserController) Login(ctx *gin.Context) {
 		})
 		return
 	}
+	isAdmin := false
+	if parsedToken, _, err := jwt.NewParser().ParseUnverified(token, jwt.MapClaims{}); err == nil {
+		if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok {
+			if claimValue, ok := claims["is_admin"].(bool); ok {
+				isAdmin = claimValue
+			}
+		}
+	}
 	ctx.SetSameSite(http.SameSiteLaxMode)
 	ctx.SetCookie(
 		"jwt",                     // Имя куки
@@ -80,6 +89,8 @@ func (c *UserController) Login(ctx *gin.Context) {
 	)
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"message": "login success",
+		"message":  "login success",
+		"token":    token,
+		"is_admin": isAdmin,
 	})
 }
