@@ -2,7 +2,8 @@ package lib
 
 import (
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/domain"
-	order "immxrtalbeast/order_microservices/protos/gen/go/order"
+
+	order "github.com/immxrtalbeast/order_protos/gen/go/order"
 
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -37,6 +38,8 @@ func ConvertOrdersToProto(orders []domain.Order) []*order.Order {
 
 func ConvertStatusToProto(status string) order.OrderStatus {
 	switch status {
+	case "PENDING":
+		return order.OrderStatus_PENDING
 	case "PROCESSING":
 		return order.OrderStatus_PROCESSING
 	case "COMPLETED":
