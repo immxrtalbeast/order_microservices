@@ -22,9 +22,12 @@ func (r *SagaRepository) SaveSaga(ctx context.Context, saga *domain.Saga) (uuid.
 }
 
 func (r *SagaRepository) Saga(ctx context.Context, sagaID uuid.UUID) (*domain.Saga, error) {
-	var saga *domain.Saga
-	err := r.db.WithContext(ctx).Model(&domain.Saga{}).Where("id = ?", sagaID).Scan(&saga).Error
-	return saga, err
+	var saga domain.Saga
+	err := r.db.WithContext(ctx).Where("id = ?", sagaID).First(&saga).Error
+	if err != nil {
+		return nil, err
+	}
+	return &saga, nil
 }
 
 func (r *SagaRepository) UpdateSaga(ctx context.Context, saga *domain.Saga) error {
