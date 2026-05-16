@@ -64,6 +64,23 @@ func AuthMiddleware(appSecret string) gin.HandlerFunc {
 		}
 
 		c.Set("userID", userID)
+		if isAdmin, ok := claims["is_admin"].(bool); ok {
+			c.Set("isAdmin", isAdmin)
+		} else {
+			c.Set("isAdmin", false)
+		}
+
+		c.Next()
+	}
+}
+
+func AdminOnlyMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		isAdmin, ok := c.Get("isAdmin")
+		if !ok || isAdmin != true {
+			c.AbortWithStatusJSON(403, gin.H{"error": "admin access required"})
+			return
+		}
 
 		c.Next()
 	}
