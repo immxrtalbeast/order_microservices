@@ -7,7 +7,6 @@ import (
 	"immxrtalbeast/order_microservices/auth-service/internal/domain"
 	"immxrtalbeast/order_microservices/auth-service/internal/lib/jwt"
 	"immxrtalbeast/order_microservices/auth-service/internal/lib/logger/sl"
-	"immxrtalbeast/order_microservices/auth-service/internal/storage/psql"
 	"log/slog"
 	"time"
 
@@ -51,12 +50,11 @@ func (a *Auth) Login(ctx context.Context, email string, password string) (string
 	ctx, span := tracer.Start(ctx, "UserService.Login")
 	span.SetAttributes(
 		attribute.String("user.email", email),
-		attribute.String("user.password", password),
 	)
 	defer span.End()
 	user, err := a.usrRepo.User(ctx, email)
 	if err != nil {
-		if errors.Is(err, psql.ErrUserNotFound) {
+		if errors.Is(err, domain.ErrUserNotFound) {
 			a.log.Warn("user not found", sl.Err(err))
 			span.RecordError(err)
 			return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
@@ -93,7 +91,7 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email string, pass string) (
 		slog.String("email", email),
 	)
 	tracer := otel.Tracer("user-service")
-	ctx, span := tracer.Start(ctx, "UserService.Login")
+	ctx, span := tracer.Start(ctx, "UserService.RegisterNewUser")
 	span.SetAttributes(
 		attribute.String("user.email", email),
 	)
@@ -119,4 +117,27 @@ func (a *Auth) RegisterNewUser(ctx context.Context, email string, pass string) (
 	}
 	log.Info("user registered")
 	return id, nil
+}
+
+func (a *Auth) IsAdmin(ctx context.Context, userID uuid.UUID) (bool, error) {
+	const op = "Auth.IsAdmin"
+
+	log := a.log.With(
+		slog.String("op", op),
+		slog.String("user_id", userID.String()),
+	)
+
+	tracer := otel.Tracer("user-service")
+	ctx, span := tracer.Start(ctx, "UserService.IsAdmin")
+	span.SetAttributes(attribute.String("user.id", userID.String()))
+	defer span.End()
+
+	isAdmin, err := a.usrRepo.IsAdmin(ctx, userID)
+	if err != nil {
+		log.Error("failed to check admin role", sl.Err(err))
+		span.RecordError(err)
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return isAdmin, nil
 }
