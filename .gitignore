@@ -26,6 +26,11 @@ go.work.sum
 
 # env file
 .env
+.runtime-bin/
+.runtime-logs/
+scripts/figma-products.json
+scripts/seed-figma-products.ps1
+scripts/product-images/
 
 # Editor/IDE
 # .idea/
