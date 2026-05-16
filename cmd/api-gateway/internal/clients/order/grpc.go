@@ -100,3 +100,16 @@ func (c *Client) ListOrdersByUser(ctx context.Context, userID string, limit, off
 	}
 	return resp, nil
 }
+
+func (c *Client) ListAllOrders(ctx context.Context, limit, offset int32) (*order.ListOrdersResponse, error) {
+	const op = "grpc.ListAllOrders"
+
+	resp, err := c.api.ListAllOrders(ctx, &order.ListAllOrdersRequest{
+		Limit:  limit,
+		Offset: offset,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	return resp, nil
+}
