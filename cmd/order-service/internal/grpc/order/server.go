@@ -4,9 +4,9 @@ import (
 	"context"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/domain"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib"
-	order "immxrtalbeast/order_microservices/protos/gen/go/order"
 
 	"github.com/google/uuid"
+	order "github.com/immxrtalbeast/order_protos/gen/go/order"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -113,6 +113,21 @@ func (s *serverAPI) ListOrders(ctx context.Context, in *order.ListOrdersRequest)
 	}
 
 	orders, err := s.orderInteractor.ListOrdersByUser(ctx, userID, int(in.Limit), int(in.Offset))
+	if err != nil {
+		return nil, status.Error(codes.Internal, "failed to list orders")
+	}
+
+	return &order.ListOrdersResponse{
+		Orders: lib.ConvertOrdersToProto(orders),
+	}, nil
+}
+
+func (s *serverAPI) ListAllOrders(ctx context.Context, in *order.ListAllOrdersRequest) (*order.ListOrdersResponse, error) {
+	if in.Limit < 0 || in.Offset < 0 {
+		return nil, status.Error(codes.InvalidArgument, "limit and offset must be non-negative")
+	}
+
+	orders, err := s.orderInteractor.ListOrders(ctx, int(in.Limit), int(in.Offset))
 	if err != nil {
 		return nil, status.Error(codes.Internal, "failed to list orders")
 	}
