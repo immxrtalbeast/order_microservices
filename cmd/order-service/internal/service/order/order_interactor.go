@@ -6,8 +6,9 @@ import (
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/domain"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib/logger/sl"
-	"immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"log/slog"
+
+	kafka "github.com/immxrtalbeast/order_kafka"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"
@@ -46,7 +47,7 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 		UserID: userID,
 		Items:  items,
 		Total:  0,
-		Status: "PENDING",
+		Status: "PROCESSING",
 	}
 
 	log = log.With(slog.String("order_id", order.ID.String()))
@@ -141,6 +142,29 @@ func (oi *OrderInteractor) ListOrdersByUser(ctx context.Context, userID uuid.UUI
 	orders, err := oi.orderRepo.ListOrdersByUser(ctx, userID, limit, offset)
 	if err != nil {
 		log.Error("failed to get a list of orders by user", sl.Err(err))
+		span.RecordError(err)
+		return nil, fmt.Errorf("%s: %w", op, err)
+	}
+	log.Info("orders listed", slog.Int("count", len(orders)))
+	return orders, nil
+}
+
+func (oi *OrderInteractor) ListOrders(ctx context.Context, limit, offset int) ([]domain.Order, error) {
+	const op = "service.order.list"
+	log := oi.log.With(
+		slog.String("op", op),
+		slog.Int("limit", limit),
+		slog.Int("offset", offset),
+	)
+	log.Info("getting a list of all orders")
+
+	tracer := otel.Tracer("order-service")
+	ctx, span := tracer.Start(ctx, "OrderService.ListOrders")
+	defer span.End()
+
+	orders, err := oi.orderRepo.ListOrders(ctx, limit, offset)
+	if err != nil {
+		log.Error("failed to get a list of orders", sl.Err(err))
 		span.RecordError(err)
 		return nil, fmt.Errorf("%s: %w", op, err)
 	}
