@@ -2,13 +2,13 @@ package saga
 
 import (
 	"context"
-	"immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"immxrtalbeast/order_microservices/saga-service/internal/domain"
 	"immxrtalbeast/order_microservices/saga-service/internal/lib/logger/sl"
 	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
+	kafka "github.com/immxrtalbeast/order_kafka"
 	"go.opentelemetry.io/otel"
 )
 
@@ -45,7 +45,7 @@ func (si *SagaInteractor) StartSaga(ctx context.Context, event domain.OrderCreat
 		}
 		return nil
 	}
-	log.Info("Saga saved! SagaID: ", sagaID)
+	log.Info("saga saved", slog.String("saga_id", sagaID.String()))
 
 	si.ExecuteSaga(ctx, saga, event.OrderID, event.Products)
 	return nil
