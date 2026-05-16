@@ -51,7 +51,7 @@ func ProcessInventoryEvents(consumer *mykafka.Consumer, goodInteractor *good.Goo
 				log.Error("failed to unmarshal event", "type", eventType, "error", err)
 				continue
 			}
-			log.Info("Products reserve command received", event)
+			log.Info("products reserve command received", "event", event)
 
 			go func() {
 				defer processCancel()
