@@ -76,3 +76,16 @@ func (c *Client) Register(ctx context.Context, email string, password string) (s
 
 	return resp.UserId, nil
 }
+
+func (c *Client) IsAdmin(ctx context.Context, userID string) (bool, error) {
+	const op = "grpc.IsAdmin"
+
+	resp, err := c.api.IsAdmin(ctx, &ssov2.IsAdminRequest{
+		UserId: userID,
+	})
+	if err != nil {
+		return false, fmt.Errorf("%s: %w", op, err)
+	}
+
+	return resp.IsAdmin, nil
+}
