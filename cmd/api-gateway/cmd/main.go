@@ -12,6 +12,7 @@ import (
 	"log/slog"
 	"os"
 
+	kafka "github.com/immxrtalbeast/order_kafka"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 
 	"github.com/gin-contrib/cors"
@@ -69,16 +70,22 @@ func main() {
 		log.Error("failed to connect order service", slog.Any("error", err))
 		panic("failed to connect order service")
 	}
+	orderStatusProducer := kafka.NewProducer(
+		[]string{os.Getenv("KAFKA_ADDRESS")},
+		"saga-replies",
+	)
+	defer orderStatusProducer.Close()
 
 	userController := controller.NewUserController(authClient, cfg.TokenTTL)
 	inventoryController := controller.NewInventoryController(inventoryClient)
-	orderController := controller.NewOrderController(orderClient)
+	orderController := controller.NewOrderController(orderClient, orderStatusProducer)
 
 	router := gin.Default()
 
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{
 		"http://localhost:3000",
+		"http://localhost:5173",
 	}
 	config.AllowCredentials = true
 	config.AllowHeaders = []string{
@@ -110,7 +117,14 @@ func main() {
 		order.POST("/create-order", orderController.CreateOrder)
 		order.GET("/order/:id", orderController.GetOrder)
 		order.GET("/list-orders/:id", orderController.ListOrders)
+		order.PATCH("/:id/cancel", orderController.CancelOrder)
 		order.DELETE("/:id", orderController.DeleteOrder)
+	}
+	admin := api.Group("/admin")
+	admin.Use(authMiddleware, middleware.AdminOnlyMiddleware())
+	{
+		admin.GET("/orders", orderController.ListAllOrders)
+		admin.PATCH("/orders/:id/status", orderController.UpdateOrderStatus)
 	}
 	router.Run(":8080")
 
