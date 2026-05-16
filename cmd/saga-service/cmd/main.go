@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"os"
 
-	"immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"immxrtalbeast/order_microservices/internal/pkg/tracing"
 	"immxrtalbeast/order_microservices/saga-service/internal/client"
 	"immxrtalbeast/order_microservices/saga-service/internal/config"
@@ -15,6 +14,7 @@ import (
 	"immxrtalbeast/order_microservices/saga-service/internal/service/saga"
 	"immxrtalbeast/order_microservices/saga-service/storage/psql"
 
+	kafka "github.com/immxrtalbeast/order_kafka"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -33,6 +33,9 @@ func main() {
 	}
 	defer func() { _ = tracer.Shutdown(context.Background()) }()
 	dsn := fmt.Sprintf("postgresql://postgres.sqgurzgprfcomirlwgqw:%s@aws-0-eu-north-1.pooler.supabase.com:6543/postgres", os.Getenv("DB_PASS"))
+	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
+		dsn = databaseURL
+	}
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: true,
