@@ -13,6 +13,11 @@ type OrderCreatedEvent struct {
 	UserID   uuid.UUID        `json:"user_id"`
 }
 
+type OrderStatusUpdateCommand struct {
+	OrderID uuid.UUID `json:"order_id"`
+	Status  string    `json:"status"`
+}
+
 type Order struct {
 	ID        uuid.UUID   `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	UserID    uuid.UUID   `gorm:"type:uuid;not null;index"` // Связь с пользователем
@@ -42,6 +47,7 @@ type OrderRepository interface {
 	DeleteOrder(ctx context.Context, orderID uuid.UUID) error
 	UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, status string) error
 	ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Order, error)
+	ListOrders(ctx context.Context, limit, offset int) ([]Order, error)
 	SetTotalSum(ctx context.Context, orderID uuid.UUID, sum int) error
 }
 
@@ -49,6 +55,8 @@ type OrderInteractor interface {
 	CreateOrder(ctx context.Context, userID uuid.UUID, orderItem []OrderItem) (uuid.UUID, string, error)
 	Order(ctx context.Context, orderID uuid.UUID) (Order, error)
 	ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Order, error)
+	ListOrders(ctx context.Context, limit, offset int) ([]Order, error)
 	DeleteOrder(ctx context.Context, orderID uuid.UUID) error
+	UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, status string) error
 	SetTotalSum(ctx context.Context, event ReserveProductsEventReply) error
 }
