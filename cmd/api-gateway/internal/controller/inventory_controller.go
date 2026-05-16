@@ -6,6 +6,7 @@ import (
 	"immxrtalbeast/order_microservices/api-gateway/internal/lib"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -57,7 +58,7 @@ func (c *InventoryController) AddGood(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid file type"})
 		return
 	}
-	tempPath := fmt.Sprintf("/tmp/%s", file.Filename)
+	tempPath := filepath.Join(os.TempDir(), fmt.Sprintf("%s-%s", uuid.NewString(), filepath.Base(file.Filename)))
 	if err := ctx.SaveUploadedFile(file, tempPath); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save file", "details": err.Error()})
 		return
