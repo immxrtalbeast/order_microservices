@@ -6,10 +6,10 @@ import (
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/domain"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib/logger/sl"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/service/order"
-	mykafka "immxrtalbeast/order_microservices/internal/pkg/kafka"
 	"log/slog"
 	"time"
 
+	mykafka "github.com/immxrtalbeast/order_kafka"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel/propagation"
 )
@@ -50,14 +50,29 @@ func ProcessOrderEvents(consumer *mykafka.Consumer, orderInteractor *order.Order
 				log.Error("failed to unmarshal event", "type", eventType, "error", err)
 				continue
 			}
-			log.Info("Products reserve command received", event)
+			log.Info("products reserve command received", "event", event)
 
 			go func() {
 				defer processCancel()
 				orderInteractor.SetTotalSum(processCtx, event)
 			}()
 
+		case "OrderStatusUpdateCommand":
+			var command domain.OrderStatusUpdateCommand
+			if err := json.Unmarshal(msg.Value, &command); err != nil {
+				log.Error("failed to unmarshal command", "type", eventType, "error", err)
+				processCancel()
+				continue
+			}
+			go func() {
+				defer processCancel()
+				if err := orderInteractor.UpdateOrderStatus(processCtx, command.OrderID, command.Status); err != nil {
+					log.Error("failed to update order status", sl.Err(err), "order_id", command.OrderID, "status", command.Status)
+				}
+			}()
+
 		default:
+			processCancel()
 			continue
 		}
 	}
