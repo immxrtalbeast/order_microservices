@@ -36,6 +36,9 @@ func main() {
 	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
 	dsn := fmt.Sprintf("postgresql://postgres.sqgurzgprfcomirlwgqw:%s@aws-0-eu-north-1.pooler.supabase.com:6543/postgres", os.Getenv("DB_PASS"))
+	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
+		dsn = databaseURL
+	}
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
 		PreferSimpleProtocol: true,
