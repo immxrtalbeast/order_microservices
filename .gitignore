@@ -29,6 +29,7 @@ go.work.sum
 .runtime-bin/
 .runtime-logs/
 .gocache/
+.gocache-saga/
 **/service*.log
 scripts/figma-products.json
 scripts/seed-figma-products.ps1
