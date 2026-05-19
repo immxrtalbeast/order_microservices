@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -35,7 +36,11 @@ func AuthMiddleware(appSecret string) gin.HandlerFunc {
 		})
 
 		if err != nil {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid token: " + tokenString})
+			if errors.Is(err, jwt.ErrTokenExpired) {
+				c.AbortWithStatusJSON(401, gin.H{"error": "Token expired"})
+				return
+			}
+			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid token"})
 			return
 		}
 

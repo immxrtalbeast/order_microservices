@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"immxrtalbeast/order_microservices/auth-service/internal/app"
 	"immxrtalbeast/order_microservices/auth-service/internal/config"
 	"immxrtalbeast/order_microservices/auth-service/internal/lib/logger/slogpretty"
@@ -26,9 +25,9 @@ func main() {
 	}
 	defer func() { _ = tracer.Shutdown(context.Background()) }()
 
-	dsn := fmt.Sprintf("postgresql://postgres.sqgurzgprfcomirlwgqw:%s@aws-0-eu-north-1.pooler.supabase.com:6543/postgres", os.Getenv("DB_PASS"))
-	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
-		dsn = databaseURL
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		dsn = "postgresql://postgres:postgres@postgres:5432/order_microservices"
 	}
 	application := app.New(log, cfg.GRPC.Port, dsn, cfg.TokenTTL, os.Getenv("APP_SECRET"))
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"immxrtalbeast/order_microservices/cmd/order-service/grpcapp"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/client"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/config"
@@ -34,9 +33,9 @@ func main() {
 		panic(err)
 	}
 	defer func() { _ = tracer.Shutdown(context.Background()) }()
-	dsn := fmt.Sprintf("postgresql://postgres.sqgurzgprfcomirlwgqw:%s@aws-0-eu-north-1.pooler.supabase.com:6543/postgres", os.Getenv("DB_PASS"))
-	if databaseURL := os.Getenv("DATABASE_URL"); databaseURL != "" {
-		dsn = databaseURL
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		dsn = "postgresql://postgres:postgres@postgres:5432/order_microservices"
 	}
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,

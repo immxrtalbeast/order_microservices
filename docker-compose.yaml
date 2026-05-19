@@ -54,6 +54,7 @@ services:
         - "8080:8080"  # Внешний порт
       depends_on:
         - auth-service
+        - inventory-service
     auth-service:
       image: c0dys/auth_order:latest
       container_name: auth-service
