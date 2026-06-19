@@ -35,6 +35,10 @@ scripts/figma-products.json
 scripts/seed-figma-products.ps1
 scripts/product-images/
 
+# Claude Code context files (local only)
+CLAUDE.md
+PROJECT_CONTEXT.md
+
 # Editor/IDE
 # .idea/
 # .vscode/

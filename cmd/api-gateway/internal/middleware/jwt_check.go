@@ -12,23 +12,29 @@ import (
 
 func AuthMiddleware(appSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authHeader := c.GetHeader("Authorization")
-		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
-		if authHeader == "" {
-			var err error
-			tokenString, err = c.Cookie("jwt")
+		if strings.TrimSpace(appSecret) == "" {
+			c.AbortWithStatusJSON(500, gin.H{"error": "auth is not configured"})
+			return
+		}
+
+		var tokenString string
+		if authHeader := c.GetHeader("Authorization"); authHeader != "" {
+			if !strings.HasPrefix(authHeader, "Bearer ") {
+				c.AbortWithStatusJSON(401, gin.H{"error": "Bearer token required"})
+				return
+			}
+			tokenString = strings.TrimPrefix(authHeader, "Bearer ")
+		} else {
+			cookie, err := c.Cookie("jwt")
 			if err != nil {
 				c.AbortWithStatusJSON(401, gin.H{"error": "JWT required"})
 				return
 			}
+			tokenString = cookie
 		}
 
-		if tokenString == authHeader {
-			c.AbortWithStatusJSON(401, gin.H{"error": "Bearer token required"})
-			return
-		}
-
-		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		claims := jwt.MapClaims{}
+		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
@@ -49,21 +55,18 @@ func AuthMiddleware(appSecret string) gin.HandlerFunc {
 			return
 		}
 
-		claims, ok := token.Claims.(jwt.MapClaims)
-		if !ok {
+		expiresAt, err := claims.GetExpirationTime()
+		if err != nil || expiresAt == nil {
 			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid token claims"})
 			return
 		}
-
-		if exp, ok := claims["exp"].(float64); ok {
-			if time.Now().Unix() > int64(exp) {
-				c.AbortWithStatusJSON(401, gin.H{"error": "Token expired"})
-				return
-			}
+		if time.Now().After(expiresAt.Time) {
+			c.AbortWithStatusJSON(401, gin.H{"error": "Token expired"})
+			return
 		}
 
-		userID, ok := claims["uid"]
-		if !ok {
+		userID, ok := claims["uid"].(string)
+		if !ok || userID == "" {
 			c.AbortWithStatusJSON(401, gin.H{"error": "Invalid user ID in token"})
 			return
 		}

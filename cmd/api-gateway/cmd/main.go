@@ -11,6 +11,7 @@ import (
 	"immxrtalbeast/order_microservices/api-gateway/internal/tracing"
 	"log/slog"
 	"os"
+	"strings"
 
 	kafka "github.com/immxrtalbeast/order_kafka"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
@@ -37,13 +38,18 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		panic(err)
 	}
+	appSecret := os.Getenv("APP_SECRET")
+	if appSecret == "" {
+		panic("APP_SECRET is required")
+	}
+
 	authClient, err := authgrpc.New(
 		context.Background(),
 		cfg.Clients.Auth.Address,
 		cfg.Clients.Auth.Timeout,
 		cfg.Clients.Auth.RetriesCount,
 	)
-	authMiddleware := middleware.AuthMiddleware(os.Getenv("APP_SECRET"))
+	authMiddleware := middleware.AuthMiddleware(appSecret)
 
 	if err != nil {
 		log.Error("failed to connect auth service", slog.Any("error", err))
@@ -82,21 +88,19 @@ func main() {
 
 	router := gin.Default()
 
-	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{
-		"http://localhost:3000",
-		"http://localhost:5173",
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOriginFunc = func(origin string) bool {
+		return strings.HasPrefix(origin, "http://localhost:")
 	}
-	config.AllowCredentials = true
-	config.AllowHeaders = []string{
+	corsConfig.AllowCredentials = true
+	corsConfig.AllowHeaders = []string{
 		"Authorization",
 		"Content-Type",
 		"Origin",
 		"Accept",
 	}
-	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
-	config.ExposeHeaders = []string{"Set-Cookie"}
-	router.Use(cors.New(config))
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
+	router.Use(cors.New(corsConfig))
 	router.Use(otelgin.Middleware("api-gateway"))
 	api := router.Group("/api/v1")
 	{
@@ -106,10 +110,10 @@ func main() {
 	inventory := api.Group("/inventory")
 	inventory.Use(authMiddleware)
 	{
-		inventory.POST("/add-good", inventoryController.AddGood)
 		inventory.GET("/goods", inventoryController.ListGoods)
-		inventory.PATCH("/update-good", inventoryController.UpdateGood)
-		inventory.DELETE("/:id", inventoryController.DeleteGood)
+		inventory.POST("/add-good", middleware.AdminOnlyMiddleware(), inventoryController.AddGood)
+		inventory.PATCH("/update-good", middleware.AdminOnlyMiddleware(), inventoryController.UpdateGood)
+		inventory.DELETE("/:id", middleware.AdminOnlyMiddleware(), inventoryController.DeleteGood)
 	}
 	order := api.Group("/order")
 	order.Use(authMiddleware)
@@ -126,7 +130,9 @@ func main() {
 		admin.GET("/orders", orderController.ListAllOrders)
 		admin.PATCH("/orders/:id/status", orderController.UpdateOrderStatus)
 	}
-	router.Run(":8080")
+	if err := router.Run(":8080"); err != nil {
+		panic(err)
+	}
 
 }
 
