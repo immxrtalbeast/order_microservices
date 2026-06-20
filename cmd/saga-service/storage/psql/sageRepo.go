@@ -18,7 +18,14 @@ func NewSagaRepository(db *gorm.DB) *SagaRepository {
 
 func (r *SagaRepository) SaveSaga(ctx context.Context, saga *domain.Saga) (uuid.UUID, error) {
 	err := r.db.WithContext(ctx).Create(&saga).Error
-	return uuid.MustParse(saga.ID), err
+	if err != nil {
+		return uuid.Nil, err
+	}
+	sagaID, err := uuid.Parse(saga.ID)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	return sagaID, nil
 }
 
 func (r *SagaRepository) Saga(ctx context.Context, sagaID uuid.UUID) (*domain.Saga, error) {

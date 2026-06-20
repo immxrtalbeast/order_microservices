@@ -1,5 +1,4 @@
 version: '3'
-timeout: 10s
 tasks:
   up:
     deps: [run-inventory, run-auth, run-order, run-saga, run-api]

@@ -18,7 +18,7 @@ func NewToken(user *domain.User, duration time.Duration, secret string) (string,
 
 	tokenString, err := token.SignedString([]byte(secret))
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	return tokenString, nil
 }

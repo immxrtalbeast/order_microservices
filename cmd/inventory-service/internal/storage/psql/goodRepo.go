@@ -50,9 +50,17 @@ func (r *GoodRepository) ReserveProducts(ctx context.Context, orderItems []domai
 	var total int
 
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		goodIDs := make([]uuid.UUID, len(orderItems))
-		for i, item := range orderItems {
-			goodIDs[i] = item.GoodID
+		quantityByGoodID := make(map[uuid.UUID]int, len(orderItems))
+		for _, item := range orderItems {
+			if item.Quantity <= 0 {
+				return errors.New("quantity must be positive")
+			}
+			quantityByGoodID[item.GoodID] += item.Quantity
+		}
+
+		goodIDs := make([]uuid.UUID, 0, len(quantityByGoodID))
+		for goodID := range quantityByGoodID {
+			goodIDs = append(goodIDs, goodID)
 		}
 
 		var goods []domain.Good
@@ -70,19 +78,19 @@ func (r *GoodRepository) ReserveProducts(ctx context.Context, orderItems []domai
 		total = 0
 		updates := make(map[uuid.UUID]int)
 
-		for _, item := range orderItems {
-			good, exists := goodMap[item.GoodID]
+		for goodID, requestedQuantity := range quantityByGoodID {
+			good, exists := goodMap[goodID]
 			if !exists {
 				return errors.New("good not found")
 			}
 
-			total += good.Price * item.Quantity
+			total += good.Price * requestedQuantity
 
-			newQuantity := good.QuantityInStock - item.Quantity
+			newQuantity := good.QuantityInStock - requestedQuantity
 			if newQuantity < 0 {
 				return errors.New("insufficient quantity")
 			}
-			updates[item.GoodID] = newQuantity
+			updates[goodID] = newQuantity
 		}
 
 		for goodID, quantity := range updates {

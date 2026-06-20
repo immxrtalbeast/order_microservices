@@ -78,7 +78,13 @@ func (r *OrderRepository) GetOrder(ctx context.Context, orderID uuid.UUID) (doma
 
 func (r *OrderRepository) UpdateOrderStatus(ctx context.Context, orderID uuid.UUID, status string) error {
 	result := r.db.WithContext(ctx).Model(&domain.Order{}).Where("id = ?", orderID).Update("status", status)
-	return result.Error
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("order not found")
+	}
+	return nil
 }
 
 func (r *OrderRepository) ListOrdersByUser(ctx context.Context, userID uuid.UUID, limit, offset int) ([]domain.Order, error) {
@@ -105,5 +111,11 @@ func (r *OrderRepository) ListOrders(ctx context.Context, limit, offset int) ([]
 
 func (r *OrderRepository) SetTotalSum(ctx context.Context, orderID uuid.UUID, sum int) error {
 	result := r.db.WithContext(ctx).Model(&domain.Order{}).Where("id = ?", orderID).Update("total", sum)
-	return result.Error
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("order not found")
+	}
+	return nil
 }

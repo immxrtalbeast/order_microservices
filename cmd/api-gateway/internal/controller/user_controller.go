@@ -3,6 +3,7 @@ package controller
 import (
 	authgrpc "immxrtalbeast/order_microservices/api-gateway/internal/clients/auth"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -45,7 +46,6 @@ func (c *UserController) Register(ctx *gin.Context) {
 		"message": "user created",
 		"userID":  userID,
 	})
-
 }
 
 func (c *UserController) Login(ctx *gin.Context) {
@@ -53,6 +53,7 @@ func (c *UserController) Login(ctx *gin.Context) {
 		Login string `json:"email" binding:"required,min=3,max=50"`
 		Pass  string `json:"password" binding:"required,min=5,max=50"`
 	}
+
 	var req LoginRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -61,6 +62,7 @@ func (c *UserController) Login(ctx *gin.Context) {
 		})
 		return
 	}
+
 	token, err := c.authService.Login(ctx, req.Login, req.Pass)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -69,6 +71,7 @@ func (c *UserController) Login(ctx *gin.Context) {
 		})
 		return
 	}
+
 	isAdmin := false
 	if parsedToken, _, err := jwt.NewParser().ParseUnverified(token, jwt.MapClaims{}); err == nil {
 		if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok {
@@ -77,15 +80,16 @@ func (c *UserController) Login(ctx *gin.Context) {
 			}
 		}
 	}
+
 	ctx.SetSameSite(http.SameSiteLaxMode)
 	ctx.SetCookie(
-		"jwt",                     // Имя куки
-		token,                     // Значение токена
-		int(c.tokenTTL.Seconds()), // Макс возраст в секундах
-		"/",                       // Путь
-		"",                        // Домен (пусто для текущего домена)
-		false,                     // Secure (использовать true в production для HTTPS)
-		false,                     // HttpOnly
+		"jwt",
+		token,
+		int(c.tokenTTL.Seconds()),
+		"/",
+		"",
+		os.Getenv("COOKIE_SECURE") == "true",
+		true,
 	)
 
 	ctx.JSON(http.StatusOK, gin.H{

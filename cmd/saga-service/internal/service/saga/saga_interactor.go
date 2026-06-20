@@ -18,6 +18,11 @@ type SagaInteractor struct {
 	sagaRepo domain.SagaRepository
 }
 
+type orderStatusUpdateCommand struct {
+	OrderID uuid.UUID `json:"order_id"`
+	Status  string    `json:"status"`
+}
+
 func NewSagaInteractor(log *slog.Logger, producer *kafka.Producer, sagaRepo domain.SagaRepository) *SagaInteractor {
 	return &SagaInteractor{log: log, producer: producer, sagaRepo: sagaRepo}
 }
@@ -43,7 +48,7 @@ func (si *SagaInteractor) StartSaga(ctx context.Context, event domain.OrderCreat
 		if err := si.producer.PublishEvent(context.Background(), "StartSagaError", ""); err != nil {
 			log.Error("Failed to publish event", sl.Err(err))
 		}
-		return nil
+		return err
 	}
 	log.Info("saga saved", slog.String("saga_id", sagaID.String()))
 
@@ -61,8 +66,15 @@ func (si *SagaInteractor) ExecuteSaga(ctx context.Context, saga *domain.Saga, or
 	tracer := otel.Tracer("saga-service")
 	ctx, span := tracer.Start(ctx, "SagaService.ExecuteSaga")
 	defer span.End()
+	sagaID, err := uuid.Parse(saga.ID)
+	if err != nil {
+		log.Error("invalid saga id", sl.Err(err))
+		span.RecordError(err)
+		return
+	}
+
 	command := domain.ReserveItemsCommand{
-		SagaID:   uuid.MustParse(saga.ID),
+		SagaID:   sagaID,
 		OrderID:  orderID,
 		Products: products,
 	}
@@ -118,16 +130,18 @@ func (si *SagaInteractor) HandleProductsReservedError(ctx context.Context, event
 		return
 	}
 
+	saga.CurrentStep = string(domain.StateCompensated)
+	saga.UpdatedAt = time.Now()
 	if err = si.sagaRepo.UpdateSaga(ctx, saga); err != nil {
 		log.Error("Failed to save saga", sl.Err(err))
 		span.RecordError(err)
 		return
 	}
-	command := domain.CancelOrderCommand{
+	command := orderStatusUpdateCommand{
 		OrderID: event.OrderID,
-		SagaID:  event.SagaID,
+		Status:  "CANCELLED",
 	}
-	if err := si.producer.PublishEventWithEventType(ctx, "OrderCancel", command, "OrderCancel"); err != nil {
+	if err := si.producer.PublishEventWithEventType(ctx, "OrderStatusUpdateCommand", command, "OrderStatusUpdateCommand"); err != nil {
 		log.Error("Failed to publish event", sl.Err(err))
 		span.RecordError(err)
 		return

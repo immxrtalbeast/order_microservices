@@ -30,14 +30,20 @@ go.work.sum
 .runtime-logs/
 .gocache/
 .gocache-saga/
-**/service*.log
+**/*.log
 scripts/figma-products.json
 scripts/seed-figma-products.ps1
 scripts/product-images/
+scripts/products.json
+scripts/seed-products.ps1
 
 # Claude Code context files (local only)
 CLAUDE.md
 PROJECT_CONTEXT.md
+.claude/
+
+# Playwright test artifacts
+.playwright-mcp/
 
 # Editor/IDE
 # .idea/

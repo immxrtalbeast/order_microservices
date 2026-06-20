@@ -2,10 +2,9 @@ package lib
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -13,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/google/uuid"
 )
 
 func UploadToSupabase(tempPath, fileName, contentType string) (string, error) {
@@ -52,12 +52,11 @@ func UploadToSupabase(tempPath, fileName, contentType string) (string, error) {
 	}
 	defer file.Close()
 
-	hash := sha256.Sum256([]byte(fileName))
-	hashedString := hex.EncodeToString(hash[:])
+	objectKey := fmt.Sprintf("product-images/%s%s", uuid.NewString(), imageExtension(fileName, contentType))
 
 	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
 		Bucket:      aws.String(bucket),
-		Key:         aws.String(hashedString),
+		Key:         aws.String(objectKey),
 		Body:        file,
 		ContentType: aws.String(contentType),
 	})
@@ -68,10 +67,28 @@ func UploadToSupabase(tempPath, fileName, contentType string) (string, error) {
 	publicURL := fmt.Sprintf("%s/object/public/%s/%s",
 		strings.TrimSuffix(endpoint, "/s3"),
 		bucket,
-		hashedString,
+		objectKey,
 	)
 
 	return publicURL, nil
+}
+
+func imageExtension(fileName, contentType string) string {
+	ext := strings.ToLower(filepath.Ext(fileName))
+	switch ext {
+	case ".jpg", ".jpeg", ".png", ".webp":
+		return ext
+	}
+	switch contentType {
+	case "image/jpeg":
+		return ".jpg"
+	case "image/png":
+		return ".png"
+	case "image/webp":
+		return ".webp"
+	default:
+		return ""
+	}
 }
 
 func firstNonEmpty(values ...string) string {

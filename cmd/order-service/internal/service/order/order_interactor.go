@@ -70,6 +70,11 @@ func (oi *OrderInteractor) CreateOrder(ctx context.Context, userID uuid.UUID, it
 	if err := oi.producer.PublishEventWithEventType(ctx, "OrderCreatedEvent", event, "OrderCreatedEvent"); err != nil {
 		log.Error("failed to publish event", sl.Err(err))
 		span.RecordError(err)
+		if statusErr := oi.orderRepo.UpdateOrderStatus(ctx, order.ID, "CANCELLED"); statusErr != nil {
+			log.Error("failed to mark order as cancelled after publish failure", sl.Err(statusErr))
+			span.RecordError(statusErr)
+		}
+		return uuid.Nil, "", fmt.Errorf("%s: publish order event: %w", op, err)
 	}
 
 	log.Info("Order created")
