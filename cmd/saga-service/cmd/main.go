@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
 
@@ -9,9 +10,10 @@ import (
 	"immxrtalbeast/order_microservices/saga-service/internal/domain"
 	"immxrtalbeast/order_microservices/saga-service/internal/lib/logger/slogpretty"
 	"immxrtalbeast/order_microservices/saga-service/internal/service/saga"
+	"immxrtalbeast/order_microservices/saga-service/internal/tracing"
 	"immxrtalbeast/order_microservices/saga-service/storage/psql"
 
-	kafka "github.com/immxrtalbeast/order_kafka"
+	kafka "github.com/ozzus/order_kafka"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -24,6 +26,12 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		panic(err)
 	}
+	tracer, err := tracing.InitTracer("saga-service")
+	if err != nil {
+		panic(err)
+	}
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
+
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		dsn = "postgresql://postgres:postgres@postgres:5432/order_microservices"

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"immxrtalbeast/order_microservices/cmd/order-service/grpcapp"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/client"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/config"
@@ -9,10 +10,11 @@ import (
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib/logger/slogpretty"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/service/order"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/storage/psql"
+	"immxrtalbeast/order_microservices/cmd/order-service/internal/tracing"
 	"log/slog"
 	"os"
 
-	kafka "github.com/immxrtalbeast/order_kafka"
+	kafka "github.com/ozzus/order_kafka"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -26,6 +28,12 @@ func main() {
 		log.Error("failed to load .env file", sl.Err(err))
 		os.Exit(1)
 	}
+	tracer, err := tracing.InitTracer("order-service")
+	if err != nil {
+		panic(err)
+	}
+	defer func() { _ = tracer.Shutdown(context.Background()) }()
+
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		dsn = "postgresql://postgres:postgres@postgres:5432/order_microservices"
@@ -62,7 +70,6 @@ func main() {
 	go client.ProcessOrderEvents(consumer, orderInteractor, log)
 	grpcApp := grpcapp.New(log, orderInteractor, cfg.GRPC.Port)
 	grpcApp.MustRun()
-
 }
 
 const (
@@ -101,24 +108,3 @@ func setupPrettySlog() *slog.Logger {
 
 	return slog.New(handler)
 }
-
-// func processOrderEvents(consumer *kafka.Consumer, orderInteractor *order.OrderInteractor, log *slog.Logger) {
-// 	for  {
-// 		readCtx, readCancel := context.WithTimeout(context.Background(), 5*time.Second)
-// 		var event domain.ReserveProductsEvent
-
-// 		_, err := consumer.ReadEvent(readCtx, &event)
-// 		readCancel()
-// 		if err != nil {
-// 			if err == context.DeadlineExceeded {
-// 				continue
-// 			}
-// 			time.Sleep(1 * time.Second)
-// 			continue
-// 		}
-// 		processCtx, processCancel := context.WithTimeout(context.Background(), 30*time.Second)
-// 		log.Info("Order created event received", event)
-// 		orderInteractor.ReserveProducts(processCtx, event)
-// 		processCancel()
-// 	}
-// }
