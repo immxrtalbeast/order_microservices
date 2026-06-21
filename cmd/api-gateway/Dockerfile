@@ -1,15 +1,17 @@
 FROM golang:alpine AS builder
 
-RUN apk add --no-cache
+ENV GOPROXY=https://proxy.golang.org,direct
+
 WORKDIR /app
 COPY go.mod go.sum ./
-RUN go mod download -x
-COPY . .             
-
-RUN go build -ldflags="-s -w" -o /app/main ./cmd/main.go
+RUN --mount=type=cache,target=/go/pkg/mod go mod download
+COPY . .
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    go build -ldflags="-s -w" -o /app/main ./cmd/main.go
 
 FROM alpine:latest
-RUN apk add --no-cache 
+RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/.env /app/
