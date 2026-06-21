@@ -12,7 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	mykafka "github.com/immxrtalbeast/order_kafka"
+	mykafka "github.com/ozzus/order_kafka"
 )
 
 type OrderController struct {

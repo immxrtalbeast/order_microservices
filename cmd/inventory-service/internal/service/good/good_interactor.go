@@ -7,7 +7,7 @@ import (
 	"immxrtalbeast/order_microservices/inventory-service/internal/lib/logger/sl"
 	"log/slog"
 
-	kafka "github.com/immxrtalbeast/order_kafka"
+	kafka "github.com/ozzus/order_kafka"
 
 	"github.com/google/uuid"
 	"go.opentelemetry.io/otel"

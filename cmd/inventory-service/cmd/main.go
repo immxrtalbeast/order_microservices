@@ -13,7 +13,7 @@ import (
 	"log/slog"
 	"os"
 
-	kafka "github.com/immxrtalbeast/order_kafka"
+	kafka "github.com/ozzus/order_kafka"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"

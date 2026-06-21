@@ -13,7 +13,7 @@ import (
 	"os"
 	"strings"
 
-	kafka "github.com/immxrtalbeast/order_kafka"
+	kafka "github.com/ozzus/order_kafka"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 
 	"github.com/gin-contrib/cors"

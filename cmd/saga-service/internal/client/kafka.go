@@ -10,7 +10,7 @@ import (
 	"log/slog"
 	"time"
 
-	mykafka "github.com/immxrtalbeast/order_kafka"
+	mykafka "github.com/ozzus/order_kafka"
 	"github.com/segmentio/kafka-go"
 	"go.opentelemetry.io/otel/propagation"
 )

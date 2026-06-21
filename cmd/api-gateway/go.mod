@@ -16,9 +16,9 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2
 	github.com/ilyakaznacheev/cleanenv v1.5.0
-	github.com/immxrtalbeast/order_kafka v0.0.0-20250917131923-8b079d832554
 	github.com/joho/godotenv v1.5.1
-	github.com/ozzus/order_protos v0.0.0-20260621104651-80826a6a8f8f
+	github.com/ozzus/order_kafka v0.0.0-20260621120956-f08d9605a6c7
+	github.com/ozzus/order_protos v0.0.0-20260621120947-f44d30eaffd6
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.62.0
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.63.0
 	go.opentelemetry.io/otel v1.38.0

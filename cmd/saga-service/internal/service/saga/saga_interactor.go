@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	kafka "github.com/immxrtalbeast/order_kafka"
+	kafka "github.com/ozzus/order_kafka"
 	"go.opentelemetry.io/otel"
 )
 
