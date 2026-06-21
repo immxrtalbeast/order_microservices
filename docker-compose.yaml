@@ -1,71 +1,132 @@
+version: "3.9"
+
+networks:
+  order-net:
+    name: order-net
+
 services:
-    postgres:
-      image: postgres:16-alpine
-      container_name: order-postgres
-      ports:
-        - "5432:5432"
-      environment:
-        POSTGRES_USER: postgres
-        POSTGRES_PASSWORD: postgres
-        POSTGRES_DB: order_microservices
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U postgres -d order_microservices"]
-        interval: 5s
-        timeout: 5s
-        retries: 10
-      volumes:
-        - order_postgres_data:/var/lib/postgresql/data
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: order-zookeeper
+    networks: [order-net]
+    expose: ["2181"]
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
 
-    zookeeper:
-      image: confluentinc/cp-zookeeper:7.4.0
-      container_name: zookeeper
-      ports:
-        - "2181:2181"
-      environment:
-        ZOOKEEPER_CLIENT_PORT: 2181
-        ZOOKEEPER_TICK_TIME: 2000
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: order-kafka
+    networks: [order-net]
+    depends_on: [zookeeper]
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:19092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:19092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:19092 --list"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
 
-    kafka1:
-      image: confluentinc/cp-kafka:7.4.0
-      container_name: kafka1
-      depends_on:
-        - zookeeper
-      ports:
-        - "9092:9092"
-        - "19092:19092"
-      environment:
-        KAFKA_BROKER_ID: 1
-        KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:19092,PLAINTEXT_HOST://localhost:9092
-        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: order-jaeger
+    networks: [order-net]
+    ports:
+      - "16686:16686"
+    expose:
+      - "14268"
+      - "14250"
 
-    jaeger:
-      image: jaegertracing/all-in-one:latest
-      ports:
-        - "16686:16686"  # Jaeger UI
-        - "14268:14268"  # HTTP endpoint for spans
-        - "14250:14250"  # gRPC endpoint for spans
-    api-gateway:
-      image: c0dys/api_gateway_order:latest
-      container_name: api-gateway
-      ports:
-        - "8080:8080"  # Внешний порт
-      depends_on:
-        - auth-service
-        - inventory-service
-    auth-service:
-      image: c0dys/auth_order:latest
-      container_name: auth-service
-      expose:
-        - "44044"
-    inventory-service:
-      image: c0dys/inventory_order:latest
-      container_name: inventory-service
-      expose:
-        - "44045"
+  auth-service:
+    image: c0dys/auth_order:latest
+    build:
+      context: ./cmd/auth-service
+      dockerfile: Dockerfile
+    container_name: order-auth
+    networks: [order-net]
+    expose: ["44044"]
+    restart: unless-stopped
+    depends_on:
+      jaeger:
+        condition: service_started
+    env_file: ./cmd/auth-service/.env
 
-volumes:
-    order_postgres_data:
+  inventory-service:
+    image: c0dys/inventory_order:latest
+    build:
+      context: ./cmd/inventory-service
+      dockerfile: Dockerfile
+    container_name: order-inventory
+    networks: [order-net]
+    expose: ["44045"]
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+    env_file: ./cmd/inventory-service/.env
+    environment:
+      KAFKA_ADDRESS: kafka:19092
 
+  order-service:
+    image: c0dys/order_order:latest
+    build:
+      context: ./cmd/order-service
+      dockerfile: Dockerfile
+    container_name: order-svc
+    networks: [order-net]
+    expose: ["44046"]
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    env_file: ./cmd/order-service/.env
+    environment:
+      KAFKA_ADDRESS: kafka:19092
+
+  saga-service:
+    image: c0dys/saga_order:latest
+    build:
+      context: ./cmd/saga-service
+      dockerfile: Dockerfile
+    container_name: order-saga
+    networks: [order-net]
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    env_file: ./cmd/saga-service/.env
+    environment:
+      KAFKA_ADDRESS: kafka:19092
+
+  api-gateway:
+    image: c0dys/api_gateway_order:latest
+    build:
+      context: ./cmd/api-gateway
+      dockerfile: Dockerfile
+    container_name: order-gateway
+    networks: [order-net]
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    depends_on:
+      auth-service:
+        condition: service_started
+      inventory-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+    env_file: ./cmd/api-gateway/.env
+    environment:
+      KAFKA_ADDRESS: kafka:19092

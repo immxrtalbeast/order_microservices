@@ -1,0 +1,4 @@
+env: "dev"
+grpc:
+  port: 44046
+  timeout: 5s
