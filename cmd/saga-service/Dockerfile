@@ -1,9 +1,8 @@
 FROM golang:alpine AS builder
 
-RUN apk add --no-cache gcc musl-dev librdkafka-dev pkgconf
-
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOWORK=off
+ENV GOFLAGS=-mod=mod
 
 WORKDIR /app
 COPY internal/pkg/tracing/ ./internal/pkg/tracing/
@@ -21,7 +20,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     go build -ldflags="-s -w" -o /main ./cmd/main.go
 
 FROM alpine:latest
-RUN apk add --no-cache ca-certificates librdkafka
+RUN apk add --no-cache ca-certificates
 WORKDIR /app
 COPY --from=builder /main ./main
 COPY cmd/saga-service/.env /app/

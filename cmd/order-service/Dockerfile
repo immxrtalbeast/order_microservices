@@ -2,6 +2,7 @@ FROM golang:alpine AS builder
 
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOWORK=off
+ENV GOFLAGS=-mod=mod
 
 WORKDIR /app
 COPY internal/pkg/tracing/ ./internal/pkg/tracing/
