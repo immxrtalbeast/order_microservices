@@ -90,7 +90,8 @@ func main() {
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOriginFunc = func(origin string) bool {
-		return strings.HasPrefix(origin, "http://localhost:")
+		return strings.HasPrefix(origin, "http://localhost:") ||
+			origin == "http://80.253.249.143"
 	}
 	corsConfig.AllowCredentials = true
 	corsConfig.AllowHeaders = []string{
