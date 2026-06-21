@@ -2,10 +2,6 @@ module immxrtalbeast/order_microservices/saga-service
 
 go 1.24.5
 
-require immxrtalbeast/order_microservices/internal/pkg/tracing v0.0.0-00010101000000-000000000000
-
-replace immxrtalbeast/order_microservices/internal/pkg/tracing => ../../internal/pkg/tracing
-
 require (
 	github.com/fatih/color v1.18.0
 	github.com/google/uuid v1.3.0
@@ -34,9 +30,7 @@ require (
 	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
-	go.opentelemetry.io/otel/exporters/jaeger v1.17.0 // indirect
 	go.opentelemetry.io/otel/metric v1.38.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.17.0 // indirect
 	go.opentelemetry.io/otel/trace v1.38.0 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect

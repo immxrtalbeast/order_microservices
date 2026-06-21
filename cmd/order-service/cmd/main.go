@@ -10,7 +10,6 @@ import (
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib/logger/slogpretty"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/service/order"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/storage/psql"
-	"immxrtalbeast/order_microservices/internal/pkg/tracing"
 	"log/slog"
 	"os"
 
@@ -28,11 +27,6 @@ func main() {
 		log.Error("failed to load .env file", sl.Err(err))
 		os.Exit(1)
 	}
-	tracer, err := tracing.InitTracer("order-service")
-	if err != nil {
-		panic(err)
-	}
-	defer func() { _ = tracer.Shutdown(context.Background()) }()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		dsn = "postgresql://postgres:postgres@postgres:5432/order_microservices"

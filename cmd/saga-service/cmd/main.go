@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
 	"log/slog"
 	"os"
 
-	"immxrtalbeast/order_microservices/internal/pkg/tracing"
 	"immxrtalbeast/order_microservices/saga-service/internal/client"
 	"immxrtalbeast/order_microservices/saga-service/internal/config"
 	"immxrtalbeast/order_microservices/saga-service/internal/domain"
@@ -26,11 +24,6 @@ func main() {
 	if err := godotenv.Load(".env"); err != nil {
 		panic(err)
 	}
-	tracer, err := tracing.InitTracer("saga-service")
-	if err != nil {
-		panic(err)
-	}
-	defer func() { _ = tracer.Shutdown(context.Background()) }()
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
 		dsn = "postgresql://postgres:postgres@postgres:5432/order_microservices"
