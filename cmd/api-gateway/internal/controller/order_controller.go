@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	order "github.com/immxrtalbeast/order_protos/gen/go/order"
+	order "github.com/ozzus/order_protos/gen/go/order"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

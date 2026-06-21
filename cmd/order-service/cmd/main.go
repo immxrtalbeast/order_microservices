@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"immxrtalbeast/order_microservices/cmd/order-service/grpcapp"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/client"
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/config"

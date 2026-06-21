@@ -3,6 +3,7 @@ FROM golang:alpine AS builder
 ENV GOPROXY=https://proxy.golang.org,direct
 ENV GOWORK=off
 ENV GOFLAGS=-mod=mod
+ENV GONOSUMDB=*
 
 WORKDIR /app
 COPY go.mod go.sum ./

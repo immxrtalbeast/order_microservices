@@ -6,7 +6,7 @@ import (
 	"immxrtalbeast/order_microservices/cmd/order-service/internal/lib"
 
 	"github.com/google/uuid"
-	order "github.com/immxrtalbeast/order_protos/gen/go/order"
+	order "github.com/ozzus/order_protos/gen/go/order"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

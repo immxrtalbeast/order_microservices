@@ -3,7 +3,7 @@ package lib
 import (
 	"immxrtalbeast/order_microservices/inventory-service/internal/domain"
 
-	inventory "github.com/immxrtalbeast/order_protos/gen/go/inventory"
+	inventory "github.com/ozzus/order_protos/gen/go/inventory"
 )
 
 func ConvertGoodToProduct(dbGoods []*domain.Good) []*inventory.Product {

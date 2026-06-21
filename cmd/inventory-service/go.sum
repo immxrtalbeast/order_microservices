@@ -22,8 +22,6 @@ github.com/ilyakaznacheev/cleanenv v1.5.0 h1:0VNZXggJE2OYdXE87bfSSwGxeiGt9moSR2l
 github.com/ilyakaznacheev/cleanenv v1.5.0/go.mod h1:a5aDzaJrLCQZsazHol1w8InnDcOX0OColm64SlIi6gk=
 github.com/immxrtalbeast/order_kafka v0.0.0-20250917131923-8b079d832554 h1:6wxImwB17l+G6otBkNjs77frdvP/QgcGR6rfGuGmufM=
 github.com/immxrtalbeast/order_kafka v0.0.0-20250917131923-8b079d832554/go.mod h1:TSWAujG5t35DKkD4rG+4XziriEYAiWJEn8wmxBMiELg=
-github.com/immxrtalbeast/order_protos v0.0.0-20250917122504-96dccf72686d h1:h+tF3KeXL6AE7A6uVZLYGDSitDAQQBiqG8PIxpqs4Zc=
-github.com/immxrtalbeast/order_protos v0.0.0-20250917122504-96dccf72686d/go.mod h1:PtRxwrc/18wGIVIWmVs8oJrmibjjVw/JnnyGctjOPKo=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
@@ -49,6 +47,8 @@ github.com/mattn/go-colorable v0.1.13/go.mod h1:7S9/ev0klgBDR4GtXTXX8a3vIGJpMovk
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
 github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWEY=
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
+github.com/ozzus/order_protos v0.0.0-20260621104651-80826a6a8f8f h1:aKebwcJmXjeP0TpE6g2cnNBtFs9rmplmMeqFEeDb4WA=
+github.com/ozzus/order_protos v0.0.0-20260621104651-80826a6a8f8f/go.mod h1:gjqJ9XL4MAq/Xn372ivel4Y/IDHQblh2LeOVyoFM3i0=
 github.com/pierrec/lz4/v4 v4.1.15 h1:MO0/ucJhngq7299dKLwIMtgTfbkoSPF6AoMYDd8Q4q0=
 github.com/pierrec/lz4/v4 v4.1.15/go.mod h1:gZWDp/Ze/IJXGXf23ltt2EXimqmTUXEy0GFuRQyBid4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

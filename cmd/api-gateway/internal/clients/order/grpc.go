@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	order "github.com/immxrtalbeast/order_protos/gen/go/order"
+	order "github.com/ozzus/order_protos/gen/go/order"
 
 	"github.com/google/uuid"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"

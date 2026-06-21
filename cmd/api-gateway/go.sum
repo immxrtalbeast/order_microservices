@@ -87,8 +87,6 @@ github.com/ilyakaznacheev/cleanenv v1.5.0 h1:0VNZXggJE2OYdXE87bfSSwGxeiGt9moSR2l
 github.com/ilyakaznacheev/cleanenv v1.5.0/go.mod h1:a5aDzaJrLCQZsazHol1w8InnDcOX0OColm64SlIi6gk=
 github.com/immxrtalbeast/order_kafka v0.0.0-20250917131923-8b079d832554 h1:6wxImwB17l+G6otBkNjs77frdvP/QgcGR6rfGuGmufM=
 github.com/immxrtalbeast/order_kafka v0.0.0-20250917131923-8b079d832554/go.mod h1:TSWAujG5t35DKkD4rG+4XziriEYAiWJEn8wmxBMiELg=
-github.com/immxrtalbeast/order_protos v0.0.0-20250917122504-96dccf72686d h1:h+tF3KeXL6AE7A6uVZLYGDSitDAQQBiqG8PIxpqs4Zc=
-github.com/immxrtalbeast/order_protos v0.0.0-20250917122504-96dccf72686d/go.mod h1:PtRxwrc/18wGIVIWmVs8oJrmibjjVw/JnnyGctjOPKo=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
@@ -112,6 +110,8 @@ github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd h1:TRLaZ9cD/w
 github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd/go.mod h1:6dJC0mAP4ikYIbvyc7fijjWJddQyLn8Ig3JB5CqoB9Q=
 github.com/modern-go/reflect2 v1.0.2 h1:xBagoLtFs94CBntxluKeaWgTMpvLxC4ur3nMaC9Gz0M=
 github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjYzDa0/r8luk=
+github.com/ozzus/order_protos v0.0.0-20260621104651-80826a6a8f8f h1:aKebwcJmXjeP0TpE6g2cnNBtFs9rmplmMeqFEeDb4WA=
+github.com/ozzus/order_protos v0.0.0-20260621104651-80826a6a8f8f/go.mod h1:gjqJ9XL4MAq/Xn372ivel4Y/IDHQblh2LeOVyoFM3i0=
 github.com/pelletier/go-toml/v2 v2.2.4 h1:mye9XuhQ6gvn5h28+VilKrrPoQVanw5PMw/TB0t5Ec4=
 github.com/pelletier/go-toml/v2 v2.2.4/go.mod h1:2gIqNv+qfxSVS7cM2xJQKtLSTLUE9V8t9Stt+h56mCY=
 github.com/pierrec/lz4/v4 v4.1.15 h1:MO0/ucJhngq7299dKLwIMtgTfbkoSPF6AoMYDd8Q4q0=

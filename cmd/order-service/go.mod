@@ -8,8 +8,8 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/immxrtalbeast/order_kafka v0.0.0-20250917131923-8b079d832554
-	github.com/immxrtalbeast/order_protos v0.0.0-20250917122504-96dccf72686d
 	github.com/joho/godotenv v1.5.1
+	github.com/ozzus/order_protos v0.0.0-20260621104651-80826a6a8f8f
 	github.com/segmentio/kafka-go v0.4.49
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.62.0
 	go.opentelemetry.io/otel v1.38.0

@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	inventory "github.com/immxrtalbeast/order_protos/gen/go/inventory"
+	inventory "github.com/ozzus/order_protos/gen/go/inventory"
 
 	"github.com/google/uuid"
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"

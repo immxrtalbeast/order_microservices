@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	ssov2 "github.com/immxrtalbeast/order_protos/gen/go/auth"
+	ssov2 "github.com/ozzus/order_protos/gen/go/auth"
 
 	grpcretry "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/retry"
 
