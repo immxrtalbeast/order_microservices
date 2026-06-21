@@ -2,6 +2,10 @@ module immxrtalbeast/order_microservices/saga-service
 
 go 1.24.5
 
+require immxrtalbeast/order_microservices/internal/pkg/tracing v0.0.0-00010101000000-000000000000
+
+replace immxrtalbeast/order_microservices/internal/pkg/tracing => ../../internal/pkg/tracing
+
 require (
 	github.com/confluentinc/confluent-kafka-go v1.9.2
 	github.com/fatih/color v1.18.0

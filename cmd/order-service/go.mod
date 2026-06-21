@@ -2,6 +2,10 @@ module immxrtalbeast/order_microservices/cmd/order-service
 
 go 1.24.5
 
+require immxrtalbeast/order_microservices/internal/pkg/tracing v0.0.0-00010101000000-000000000000
+
+replace immxrtalbeast/order_microservices/internal/pkg/tracing => ../../internal/pkg/tracing
+
 require (
 	github.com/fatih/color v1.18.0
 	github.com/google/uuid v1.6.0

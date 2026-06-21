@@ -82,8 +82,8 @@ services:
   order-service:
     image: c0dys/order_order:latest
     build:
-      context: ./cmd/order-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: cmd/order-service/Dockerfile
     container_name: order-svc
     networks: [order-net]
     expose: ["44046"]
@@ -98,8 +98,8 @@ services:
   saga-service:
     image: c0dys/saga_order:latest
     build:
-      context: ./cmd/saga-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: cmd/saga-service/Dockerfile
     container_name: order-saga
     networks: [order-net]
     restart: unless-stopped
